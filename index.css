@@ -1,0 +1,33 @@
+.wrapper-horizontal {
+    display: flex;
+    flex-direction: row;
+    margin: 20px;
+}
+
+.wrapper-vertical {
+    display: flex;
+    flex-direction: column;
+    margin: 20px;
+}
+
+.bordered {
+    border-collapse: collapse;
+    border: 3px solid purple;
+    margin: 20px;
+}
+
+/*.bordered > td {*/
+/*    border: 3px dashed blue;*/
+/*    font-size: 100px;*/
+/*}*/
+
+input {
+    min-width: 50px;
+}
+
+th, td {
+    text-align: center;
+    border: 3px dashed lightblue;
+    width: max-content;
+    padding: 5px;
+}
