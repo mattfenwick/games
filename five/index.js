@@ -1,7 +1,7 @@
 'use strict';
 
-console.log("hi");
 
+// model
 class Five {
     constructor() {
         this.state = "config";
@@ -10,6 +10,9 @@ class Five {
     }
 }
 
+const GameStateInProgress = 'in progress';
+const GameStateFinished = 'finished';
+
 class Game {
     constructor(width, height, players) {
         players.forEach(function(p, ix) {
@@ -17,51 +20,75 @@ class Game {
                 throw new Error("invalid player: falsy at index " + ix);
             }
         })
+        if (players.length !== 2) {
+            throw new Error("expected 2 players, found %d", players.length);
+        }
         this.players = players;
-        this.state = {'mode': 'in progress', nextPlayer: 0};
         this.width = width;
         this.height = height;
+
+        this.state = GameStateInProgress;
+        this.nextPlayer = 0;
+        this.winner = null;
+
         this.board = Array(width).fill(null).map(x => Array(height).fill(null));
     }
 
     move(x, y) {
-        console.log("player %s move to %d, %d", this.state.nextPlayer, x, y);
-        if (this.state.mode != 'in progress') {
-            throw new Error("cannot move: game not in progress");
+        console.log("player %s move to %d, %d", this.nextPlayer, x, y);
+        if (this.state !== GameStateInProgress) {
+            throw new Error(`cannot move: game not in progress (state: ${this.state})`);
         }
-        if (x < 0 || x >= this.width) {
+        if (!(x >= 0 && x < this.width)) {
             throw new Error("invalid x coordinate: " + x);
         }
-        if (y < 0 || y >= this.height) {
+        if (!(y >= 0 && y < this.height)) {
             throw new Error("invalid y coordinate: " + y);
         }
         if (this.board[x][y]) {
             throw new Error("position already taken: " + x + ", " + y);
         }
         console.log("move is legal");
-        this.board[x][y] = this.players[this.state.nextPlayer];
-        console.log("finished move");
+        this.board[x][y] = this.players[this.nextPlayer];
+        console.log("finished move, now checking for winner");
         let winner = this.checkForWinner();
         console.log("is there a winner? %s", JSON.stringify(winner));
         if (winner) {
-            this.state = {mode: 'finished', winner: winner};
-            return;
-        }
-        console.log("no winner; is the game over?");
-        // check if move is available
-        // TODO calculate: moveAvailable
-        if (false) {//!moveAvailable) {
-            this.state = {mode: 'finished', winner: null};
+            this.state = GameStateFinished;
+            this.winner = winner;
             return;
         }
 
-        console.log("game is not over: continuing");
-        // change player
-        this.state.nextPlayer++;
-        if (this.state.nextPlayer >= this.players.length) {
-            this.state.nextPlayer = 0;
+        // check if move is available
+        console.log("checking if move is available");
+        if (!this.isMoveAvailable()) {
+            console.log("move is not available: game over");
+            this.state = GameStateFinished;
+            return;
         }
-        console.log("next up is player %s", this.players[this.state.nextPlayer]);
+
+        // change player
+        console.log("continuing game, switching player");
+        this.nextPlayer++;
+        if (this.nextPlayer >= this.players.length) {
+            this.nextPlayer = 0;
+        }
+
+        console.log("next up is player %s", this.players[this.nextPlayer]);
+    }
+
+    isMoveAvailable() {
+        for (let x = 0; x < this.board.length; x++) {
+            let row = this.board[x];
+            for (let y = 0; y < row.length; y++) {
+                let square = row[y];
+                console.log("inspecting %d, %d: value %s", x, y, square);
+                if (!square) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     toPrettyString() {
@@ -96,7 +123,7 @@ class Game {
         // vertical
         for (const x of xs) {
             for (const y of yStarts) {
-                let positions = five.map(offset => [x + offset, y]);
+                let positions = five.map(offset => [x, y + offset]);
                 let winner = self.areLocationsTakenAndSame(positions);
                 if (winner) {
                     return {'winner': winner, 'positions': positions};
@@ -127,6 +154,7 @@ class Game {
     }
 
     areLocationsTakenAndSame(locations) {
+        console.log("taken/same: %s", JSON.stringify(locations));
         let self = this;
         let values = new Set();
         let last = null;
@@ -160,25 +188,52 @@ class Game {
         return this.board[x][y];
     }
 
-    get isOver() {
-        return this.state['mode'] === 'finished';
+    isOver() {
+        return this.state === GameStateFinished;
     }
+}
+// end model
 
-    // winner
+
+// tests
+
+function runTests() {
+    let board = new Game(6, 10, ["X", "O"]);
+
+    console.log(board.toPrettyString());
+
+    board.move(3, 7);
+    console.log(board.toPrettyString());
+
+    board.move(0, 0);
+    console.log(board.toPrettyString());
+
+    board.move(3, 1);
+    console.log(board.toPrettyString());
+
+    let moves = [
+        [0, 0],
+        [1, 0],
+        [0, 1],
+        [2, 0],
+        [0, 2],
+        [3, 0],
+        [0, 3],
+        [4, 0],
+        [0, 4],
+    ];
+
+    let board2 = new Game(6, 10, ["X", "O"]);
+    for (const move of moves) {
+        console.log(`board2 move: ${move}`);
+        board2.move.apply(board2, move);
+        console.log(board2.toPrettyString());
+        console.log("taken and same? %s", board2.areLocationsTakenAndSame([[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]]));
+    }
 }
 
-let board = new Game(6, 10, ["X", "O"]);
-
-console.log(board.toPrettyString());
-
-board.move(3, 7);
-console.log(board.toPrettyString());
-
-board.move(0, 0);
-console.log(board.toPrettyString());
-
-board.move(3, 1);
-console.log(board.toPrettyString());
+runTests();
+// end tests
 
 // function showHideAll(shouldShow, selector) {
 //     let elements = document.querySelectorAll(selector);
