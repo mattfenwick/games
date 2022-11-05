@@ -1,12 +1,158 @@
 'use strict';
 
+const boardCellClass = 'game.board.cell';
+
+let configDiv = document.getElementById('config');
+let configSizeDropdown = document.getElementById('config.size');
+let configStartButton = document.getElementById('config.start');
+
+let gameDiv = document.getElementById('game');
+let gameBoardTable = document.getElementById('game-board');
+let gameRestartButton = document.getElementById('game.restart');
+
+function setShow(element, shouldShow) {
+    element.style.display = shouldShow ? '' : 'none';
+}
+
 
 // model
+const BoardSizeTiny = "tiny";
+const BoardSizeSmall = "small";
+const BoardSizeMedium = "medium";
+const BoardSizeLarge = "large";
+
+const FiveStateConfig = "fivestate: config";
+const FiveStateInProgress = "fivestate: in progress";
+
 class Five {
     constructor() {
-        this.state = "config";
-        this.width = 15;
-        this.height = 15;
+        this.state = null;
+        this.setState(FiveStateConfig);
+        this.boardManager = new BoardManager();
+    }
+
+    setState(state) {
+        switch (state) {
+            case FiveStateConfig:
+                setShow(configDiv, true);
+                setShow(gameDiv, false);
+                break;
+            case FiveStateInProgress:
+                setShow(configDiv, false);
+                setShow(gameDiv, true);
+                break;
+            default:
+                throw new Error(`unhandled state ${state}`);
+        }
+        this.state = state;
+    }
+
+    didClickStart() {
+        console.log("five: start");
+        if (this.state !== FiveStateConfig) {
+            throw new Error(`unable to start: in state ${this.state}`);
+        }
+        this.setState(FiveStateInProgress);
+        let width = 0;
+        let height = 0;
+        let size = configSizeDropdown.value;
+        switch (size) {
+            case BoardSizeTiny:
+                width = 2;
+                height = 2;
+                break;
+            case BoardSizeSmall:
+                width = 8;
+                height = 8;
+                break;
+            case BoardSizeMedium:
+                width = 10;
+                height = 10;
+                break;
+            case BoardSizeLarge:
+                width = 15;
+                height = 15;
+                break;
+            default:
+                throw new Error(`invalid size ${size}`);
+        }
+        this.boardManager.startNewGame(width, height, ["X", "O"]);
+    }
+
+    didClickRestart() {
+        console.log("five: restart");
+        if (this.state !== FiveStateInProgress) {
+            throw new Error(`unable to start: in state ${this.state}`);
+        }
+        this.setState(FiveStateConfig);
+    }
+}
+
+class BoardManager {
+    constructor() {
+        this.game = null;
+        this.cells = [];
+    }
+
+    startNewGame(width, height, players) {
+        if (this.state === GameStateInProgress) {
+            throw new Error(`unable to start game: game already in progress`);
+        }
+        // 1. create board model
+        this.game = new Game(width, height, players);
+        // 2. clear out old table children
+        // 3. create new table children
+        // 4. add listeners
+        this.setUpTable(width, height);
+        // 5. set DOM state
+        this.setState(GameStateInProgress);
+    }
+
+    setUpTable(xCount, yCount) {
+        this.cells.forEach(e => e.remove());
+        this.cells = [];
+
+        let self = this;
+        for (let y = 0; y < yCount; y++) {
+            let newRow = gameBoardTable.insertRow();
+            for (let x = 0; x < xCount; x++) {
+                let xC = x; // TODO is it necessary to copy to avoid capture of mutable variable?
+                let yC = y;
+                let newCell = newRow.insertCell();
+                newCell.setAttribute("x", x);
+                newCell.setAttribute("y", y);
+                newCell.classList.add(boardCellClass);
+                newCell.addEventListener('click', function() {
+                    self.didClickCell(newCell, xC, yC);
+                });
+                this.cells.push(newCell);
+            }
+        }
+    }
+
+    didClickCell(cell, x, y) {
+        console.log("didClickCell: %d, %d", x, y);
+        this.game.move(x, y);
+        cell.appendChild(document.createTextNode(this.game.board[x][y]));
+        if (this.game.state === GameStateFinished) {
+            if (this.game.winner) {
+                console.log("winner: %s", JSON.stringify(this.game.winner));
+            }
+            this.setState(GameStateFinished);
+        }
+    }
+
+    setState(state) {
+        switch (state) {
+            case GameStateInProgress:
+                setShow(gameRestartButton, false);
+                break;
+            case GameStateFinished:
+                setShow(gameRestartButton, true);
+                break;
+            default:
+                throw new Error(`invalid state ${state}`);
+        }
     }
 }
 
@@ -105,8 +251,10 @@ class Game {
 
     checkForWinner() {
         let xs = Array(this.width).fill(0).map((_, i) => i);
-        let xStarts = Array(this.width - 4 ).fill(0).map((_, i) => i);
-        let ys = Array(this.height - 4 ).fill(0).map((_, i) => i);
+        let xStartsWidth = (this.width - 4 > 0) ? (this.width - 4) : 0;
+        let xStarts = Array(xStartsWidth).fill(0).map((_, i) => i);
+        let yStartsWidth = (this.height - 4 > 0) ? (this.height - 4) : 0;
+        let ys = Array(yStartsWidth).fill(0).map((_, i) => i);
         let yStarts = Array(this.height).fill(0).map((_, i) => i);
         let five = [0, 1, 2, 3, 4];
         let self = this;
@@ -187,16 +335,11 @@ class Game {
         }
         return this.board[x][y];
     }
-
-    isOver() {
-        return this.state === GameStateFinished;
-    }
 }
 // end model
 
 
 // tests
-
 function runTests() {
     let board = new Game(6, 10, ["X", "O"]);
 
@@ -220,7 +363,6 @@ function runTests() {
         [3, 0],
         [0, 3],
         [4, 0],
-        [0, 4],
     ];
 
     let board2 = new Game(6, 10, ["X", "O"]);
@@ -235,81 +377,19 @@ function runTests() {
 runTests();
 // end tests
 
-// function showHideAll(shouldShow, selector) {
-//     let elements = document.querySelectorAll(selector);
-//     elements.forEach(function (e) {
-//         e.style.display = shouldShow ? '' : 'none';
-//     })
-// }
-//
-// function readText(id) {
-//     return document.getElementById(id).value;
-// }
-//
-// function readBoolean(id) {
-//     return document.getElementById(id).checked;
-// }
-//
-// /* get references to DOM elements */
-// let element = document.getElementById("output");
-// let outputTextNode = document.createTextNode("");
-// element.appendChild(outputTextNode);
-//
-// let abcDropdown = document.getElementById("abc");
-// let defDropdown = document.getElementById("def-dropdown");
-// let defCheckbox = document.getElementById("def-checkbox");
-// /* end */
-//
-//
-// /* set up listeners */
-// function regenerateYaml() {
-//     console.log("triggered: regen yaml");
-//     outputTextNode.nodeValue = formatModel(readValuesFromUi());
-// }
-//
-// let inputs = document.querySelectorAll("input");
-// inputs.forEach(function (e) {
-//     console.log("setting up input listener");
-//     // which event to use: 'input' or 'change'?
-//     //   From the docs: https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/change_event
-//     //     "Unlike the input event, the change event is not necessarily fired for each alteration to an element's value."
-//     //   compare to: https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/input_event
-//     e.addEventListener('input', regenerateYaml);
-// });
-// let selects = document.querySelectorAll("select");
-// selects.forEach(function (e) {
-//     console.log("setting up select listener");
-//     e.addEventListener('change', regenerateYaml);
-// });
-//
-//
-// let didChangeAbc = () => {
-//     let value = abcDropdown.value;
-//     showHideAll(false, ".abc-type");
-//     showHideAll(true, `.abc-${value}`);
-// };
-// abcDropdown.addEventListener('change', didChangeAbc);
-//
-// defCheckbox.addEventListener('change', () => {
-//     let shouldShow = defCheckbox.checked;
-//     showHideAll(shouldShow, ".def");
-// });
-//
-// let didChangeDef = () => {
-//     let value = defDropdown.value;
-//     showHideAll(false, ".def-type");
-//     showHideAll(true, `.def-${value}`);
-// };
-// defDropdown.addEventListener('change', didChangeDef);
-// /* end */
-//
-//
-// /* set up initial state */
-// defCheckbox.setAttribute("checked", "true");
-//
-// didChangeAbc();
-//
-// didChangeDef();
-//
-// regenerateYaml();
-// /* end */
+
+
+// DOM manipulation
+let five = new Five();
+
+let didClickConfigStart = () => {
+    console.log('start clicked! %s', configSizeDropdown.value);
+    five.didClickStart();
+};
+configStartButton.addEventListener('click', didClickConfigStart);
+
+let didClickGameRestart = () => {
+    console.log('restart clicked!');
+    five.didClickRestart();
+};
+gameRestartButton.addEventListener('click', didClickGameRestart);
