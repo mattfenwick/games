@@ -8,27 +8,29 @@
 
 <body>
 
-<h1>Five in a row</h1>
+<div class="wrapper-vertical">
+    <h1>Five in a row</h1>
 
-<div id="config">
-    <div class="wrapper-vertical">
-        <div class="wrapper-horizontal">
-            Size:
+    <div id="config" class="wrapper-vertical">
         <select id="config.size">
-            <option value="tiny">tiny</option>
-            <option value="small">small</option>
-            <option value="medium" selected>medium</option>
-            <option value="large">large</option>
+            <option value="tiny">size: tiny</option>
+            <option value="small">size: small</option>
+            <option value="medium" selected>size: medium</option>
+            <option value="large">size: large</option>
         </select>
-        </div>
         <button id="config.start">Start</button>
     </div>
-</div>
 
-<div id="game">
-    <table id="game-board"></table>
-
-    <button id="game.restart">Restart</button>
+    <div id="game" class="wrapper-vertical">
+        <div id="game-header" class="wrapper-vertical">
+            <div class="wrapper-horizontal">
+                <div id="game-first-player"></div>
+                <div id="game-second-player" class="right-aligned"></div>
+            </div>
+            <button id="game.restart">Restart</button>
+        </div>
+        <table id="game-board"></table>
+    </div>
 </div>
 
 

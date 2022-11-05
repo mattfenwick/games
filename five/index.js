@@ -1,5 +1,9 @@
 'use strict';
 
+const Potato = "\uD83E\uDD54";
+const Tomato = "\uD83C\uDF45";
+
+
 const boardCellClass = 'game.board.cell';
 
 let configDiv = document.getElementById('config');
@@ -7,6 +11,8 @@ let configSizeDropdown = document.getElementById('config.size');
 let configStartButton = document.getElementById('config.start');
 
 let gameDiv = document.getElementById('game');
+let gameFirstPlayer = document.getElementById('game-first-player');
+let gameSecondPlayer = document.getElementById('game-second-player');
 let gameBoardTable = document.getElementById('game-board');
 let gameRestartButton = document.getElementById('game.restart');
 
@@ -76,7 +82,7 @@ class Five {
             default:
                 throw new Error(`invalid size ${size}`);
         }
-        this.boardManager.startNewGame(width, height, ["X", "O"]);
+        this.boardManager.startNewGame(width, height);
     }
 
     didClickRestart() {
@@ -91,15 +97,18 @@ class Five {
 class BoardManager {
     constructor() {
         this.game = null;
-        this.cells = [];
+        this.cellRows = [];
+        gameFirstPlayer.textContent = `Player 1: ${Potato}`;
+        gameSecondPlayer.textContent = `Player 2: ${Tomato}`;
+        this.players = [Potato, Tomato];
     }
 
-    startNewGame(width, height, players) {
+    startNewGame(width, height) {
         if (this.state === GameStateInProgress) {
             throw new Error(`unable to start game: game already in progress`);
         }
         // 1. create board model
-        this.game = new Game(width, height, players);
+        this.game = new Game(width, height, this.players);
         // 2. clear out old table children
         // 3. create new table children
         // 4. add listeners
@@ -109,24 +118,26 @@ class BoardManager {
     }
 
     setUpTable(xCount, yCount) {
-        this.cells.forEach(e => e.remove());
-        this.cells = [];
+        this.cellRows.forEach(row => row.forEach(e => e.remove()));
+        this.cellRows = [];
 
         let self = this;
         for (let y = 0; y < yCount; y++) {
-            let newRow = gameBoardTable.insertRow();
+            let domRow = gameBoardTable.insertRow();
+            let modelRow = [];
             for (let x = 0; x < xCount; x++) {
                 let xC = x; // TODO is it necessary to copy to avoid capture of mutable variable?
                 let yC = y;
-                let newCell = newRow.insertCell();
-                newCell.setAttribute("x", x);
-                newCell.setAttribute("y", y);
-                newCell.classList.add(boardCellClass);
-                newCell.addEventListener('click', function() {
-                    self.didClickCell(newCell, xC, yC);
+                let cell = domRow.insertCell();
+                cell.setAttribute("x", x);
+                cell.setAttribute("y", y);
+                cell.classList.add(boardCellClass);
+                cell.addEventListener('click', function() {
+                    self.didClickCell(cell, xC, yC);
                 });
-                this.cells.push(newCell);
+                modelRow.push(cell);
             }
+            this.cellRows.push(modelRow);
         }
     }
 
@@ -134,11 +145,29 @@ class BoardManager {
         console.log("didClickCell: %d, %d", x, y);
         this.game.move(x, y);
         cell.appendChild(document.createTextNode(this.game.board[x][y]));
-        if (this.game.state === GameStateFinished) {
+        if (this.game.state !== GameStateInProgress) {
+            this.setState(this.game.state);
             if (this.game.winner) {
                 console.log("winner: %s", JSON.stringify(this.game.winner));
+                let self = this;
+                this.game.winner.positions.forEach(function(pos) {
+                    let x = pos[0];
+                    let y = pos[1];
+                    self.cellRows[y][x].classList.add("winner-position");
+                });
             }
-            this.setState(GameStateFinished);
+        }
+    }
+
+    removeCellListeners() {
+        for (let y = 0; y < this.cellRows.length; y++) {
+            let row = this.cellRows[y];
+            for (let x = 0; x < row.length; x++) {
+                let cell = row[x];
+                let cellCopy = cell.cloneNode(true);
+                cell.parentNode.replaceChild(cellCopy, cell);
+                row[x] = cellCopy;
+            }
         }
     }
 
@@ -147,8 +176,10 @@ class BoardManager {
             case GameStateInProgress:
                 setShow(gameRestartButton, false);
                 break;
-            case GameStateFinished:
+            case GameStateWon:
+            case GameStateNoMoves:
                 setShow(gameRestartButton, true);
+                this.removeCellListeners();
                 break;
             default:
                 throw new Error(`invalid state ${state}`);
@@ -156,8 +187,9 @@ class BoardManager {
     }
 }
 
-const GameStateInProgress = 'in progress';
-const GameStateFinished = 'finished';
+const GameStateInProgress = 'gamestate: in progress';
+const GameStateWon = 'gamestate: won';
+const GameStateNoMoves = 'gamestate: no moves';
 
 class Game {
     constructor(width, height, players) {
@@ -200,7 +232,7 @@ class Game {
         let winner = this.checkForWinner();
         console.log("is there a winner? %s", JSON.stringify(winner));
         if (winner) {
-            this.state = GameStateFinished;
+            this.state = GameStateWon;
             this.winner = winner;
             return;
         }
@@ -209,7 +241,7 @@ class Game {
         console.log("checking if move is available");
         if (!this.isMoveAvailable()) {
             console.log("move is not available: game over");
-            this.state = GameStateFinished;
+            this.state = GameStateNoMoves;
             return;
         }
 
@@ -302,7 +334,7 @@ class Game {
     }
 
     areLocationsTakenAndSame(locations) {
-        console.log("taken/same: %s", JSON.stringify(locations));
+        // console.log("taken/same: %s", JSON.stringify(locations));
         let self = this;
         let values = new Set();
         let last = null;
@@ -320,20 +352,6 @@ class Game {
             return last;
         }
         return null;
-    }
-
-    safeGet(x, y) {
-        if (x < 0) {
-            x += this.width;
-        } else if (x >= this.width) {
-            x -= this.width;
-        }
-        if (y < 0) {
-            y += this.height;
-        } else if (y >= this.height) {
-            y -= this.height;
-        }
-        return this.board[x][y];
     }
 }
 // end model
