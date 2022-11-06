@@ -1,0 +1,29 @@
+.wrapper-horizontal {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.wrapper-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.right-aligned {
+    margin-left: auto;
+}
+
+#triangle {
+    text-align: center;
+}
+
+#add {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+}
