@@ -6,6 +6,8 @@ let addRowButton = document.getElementById('config-add-row');
 let rowsToAddSelect = document.getElementById('rows-to-add');
 let trianglePre = document.getElementById('triangle');
 
+let ACharCode = 'A'.charCodeAt(); // 65
+
 
 function setShow(element, shouldShow) {
     element.style.display = shouldShow ? '' : 'none';
@@ -16,6 +18,20 @@ function safeGet(array, index) {
     return (index < array.length && index >= 0) ? array[index] : 0;
 }
 
+function formatNumber(n) {
+    if (n === 0) {
+        return ' ';
+    } else if (n < 10) {
+        return n;
+    } else {
+        // 10 => 'A'
+        // 11 => 'B'
+        // ...
+        // 35 => 'Z'
+        return String.fromCharCode(n - 10 + ACharCode);
+    }
+}
+
 class Pascal {
     constructor() {
         this.rows = [[1]];
@@ -24,6 +40,9 @@ class Pascal {
     setBase(base) {
         if (this.base) {
             throw new Error(`cannot set base, already set to ${this.base}`);
+        }
+        if (base < 2 || base > 36) {
+            throw new Error(`base out of range, must be: 1 < base < 37`);
         }
         this.base = base;
     }
@@ -43,7 +62,7 @@ class Pascal {
     }
 
     formatRow(index) {
-        return this.rows[index].map(n => (n > 0) ? n : ' ').join(' ');
+        return this.rows[index].map(formatNumber).join(' ');
     }
 
     formatLastRow() {
@@ -54,6 +73,12 @@ class Pascal {
 
 let p = new Pascal();
 trianglePre.appendChild(document.createTextNode(p.formatLastRow() + "\n"));
+for (let i = 2; i <= 36; i++) {
+    let option = document.createElement("option");
+    option.value = i;
+    option.text = i;
+    setBaseSelect.appendChild(option);
+}
 
 let didClickAddRow = () => {
     console.log('add row clicked! %s', setBaseSelect.value);
