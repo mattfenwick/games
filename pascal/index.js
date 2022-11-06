@@ -84,7 +84,7 @@ let didClickAddRow = () => {
     console.log('add row clicked! %s', setBaseSelect.value);
     if (!p.base) {
         p.setBase(parseInt(setBaseSelect.value, 10));
-        setShow(setBaseSelect, false);
+        setBaseSelect.disabled = true;
     }
 
     let rowsToAdd = rowsToAddSelect.value;
