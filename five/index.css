@@ -34,3 +34,8 @@ th, td {
 .winner-position {
     background-color: red;
 }
+
+.player-turn {
+    font-size: x-large;
+    border: 2px double;
+}

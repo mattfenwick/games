@@ -5,6 +5,7 @@ const Tomato = "\uD83C\uDF45";
 
 
 const boardCellClass = 'game.board.cell';
+const playerTurnClass = 'player-turn';
 
 let configDiv = document.getElementById('config');
 let configSizeDropdown = document.getElementById('config.size');
@@ -14,6 +15,7 @@ let gameDiv = document.getElementById('game');
 let gameFirstPlayer = document.getElementById('game-first-player');
 let gameSecondPlayer = document.getElementById('game-second-player');
 let gameBoardTable = document.getElementById('game-board');
+let gameBoardTbody = document.getElementById('game-board-tbody');
 let gameRestartButton = document.getElementById('game.restart');
 
 function setShow(element, shouldShow) {
@@ -115,15 +117,17 @@ class BoardManager {
         this.setUpTable(width, height);
         // 5. set DOM state
         this.setState(GameStateInProgress);
+        this.setActivePlayer(this.game.nextPlayer);
     }
 
     setUpTable(xCount, yCount) {
-        this.cellRows.forEach(row => row.forEach(e => e.remove()));
+        // this.cellRows.forEach(row => row.forEach(e => e.remove()));
+        gameBoardTbody.textContent = '';
         this.cellRows = [];
 
         let self = this;
         for (let y = 0; y < yCount; y++) {
-            let domRow = gameBoardTable.insertRow();
+            let domRow = gameBoardTbody.insertRow();
             let modelRow = [];
             for (let x = 0; x < xCount; x++) {
                 let xC = x; // TODO is it necessary to copy to avoid capture of mutable variable?
@@ -138,6 +142,20 @@ class BoardManager {
                 modelRow.push(cell);
             }
             this.cellRows.push(modelRow);
+        }
+    }
+
+    setActivePlayer(playerIndex) {
+        console.log(`set active player to index ${playerIndex}`);
+        if (playerIndex === 0) {
+            gameFirstPlayer.classList.add(playerTurnClass);
+            gameSecondPlayer.classList.remove(playerTurnClass);
+        } else if (playerIndex === 1) {
+            gameFirstPlayer.classList.remove(playerTurnClass);
+            gameSecondPlayer.classList.add(playerTurnClass);
+        } else {
+            gameFirstPlayer.classList.remove(playerTurnClass);
+            gameSecondPlayer.classList.remove(playerTurnClass);
         }
     }
 
@@ -156,6 +174,9 @@ class BoardManager {
                     self.cellRows[y][x].classList.add("winner-position");
                 });
             }
+            this.setActivePlayer(null);
+        } else {
+            this.setActivePlayer(this.game.nextPlayer);
         }
     }
 
