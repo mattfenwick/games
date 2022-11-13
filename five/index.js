@@ -106,7 +106,7 @@ class BoardManager {
     }
 
     startNewGame(width, height) {
-        if (this.state === GameStateInProgress) {
+        if (this.game.state === GameStateInProgress) {
             throw new Error(`unable to start game: game already in progress`);
         }
         // 1. create board model
