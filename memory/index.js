@@ -1,5 +1,8 @@
 'use strict';
 
+const PlayerEmojis = shuffle(Object.keys(peopleEmojis));
+
+
 
 let body = document.getElementById("game-board-tbody");
 let row = body.insertRow();
@@ -15,210 +18,181 @@ for (const [food, c] of Object.entries(characters)) {
 }
 
 
+const playerElements = document.querySelector(".config-player");
 
-// const boardCellClass = 'game.board.cell';
+// const boardCellClass = 'game-board-cell';
 // const playerTurnClass = 'player-turn';
 
-// let configDiv = document.getElementById('config');
-// let configSizeDropdown = document.getElementById('config.size');
-// let configStartButton = document.getElementById('config.start');
+let configDiv = document.getElementById('config');
+let configPlayerCountDropdown = document.getElementById('config-player-count');
+let configStartButton = document.getElementById('config-start');
 
-// let gameDiv = document.getElementById('game');
-// let gameFirstPlayer = document.getElementById('game-first-player');
-// let gameSecondPlayer = document.getElementById('game-second-player');
-// let gameBoardTable = document.getElementById('game-board');
-// let gameBoardTbody = document.getElementById('game-board-tbody');
-// let gameRestartButton = document.getElementById('game.restart');
+let gameDiv = document.getElementById('game');
+let gameBoardTable = document.getElementById('game-board');
+let gameBoardTbody = document.getElementById('game-board-tbody');
+let gameRestartButton = document.getElementById('game-restart');
 
-// function setShow(element, shouldShow) {
-//     element.style.display = shouldShow ? '' : 'none';
-// }
+function setShow(element, shouldShow) {
+    element.style.display = shouldShow ? '' : 'none';
+}
 
 
-// // model
-// const BoardSizeTiny = "tiny";
-// const BoardSizeSmall = "small";
-// const BoardSizeMedium = "medium";
-// const BoardSizeLarge = "large";
+const ManagerStateConfig        = 'managerstate: config';
+const ManagerStateInProgress    = 'managerstate: in progress';
+const ManagerStateOver          = 'managerstate: over';
 
-// const FiveStateConfig = "fivestate: config";
-// const FiveStateInProgress = "fivestate: in progress";
+class Manager {
+    constructor(playerCount, isRandom) {
+        this.isRandom = isRandom;
+        this.game = null;
+        this.cellRows = [];
+        gameFirstPlayer.textContent = `Player 1: ${Potato}`;
+        gameSecondPlayer.textContent = `Player 2: ${Tomato}`;
+        if (playerCount < 1 || playerCount > 4) {
+            throw new Error(`expected 1 <= player count <= 4, got ${playerCount}`);
+        }
+        this.players = PlayerEmojis.slice(0, playerCount);
+        this.setState(ManagerStateConfig);
+    }
 
-// class Five {
-//     constructor() {
-//         this.state = null;
-//         this.setState(FiveStateConfig);
-//         this.boardManager = new BoardManager();
-//     }
+    didClickCell(cell, x, y) {
+        console.log(`didClickCell: ${x}, ${y}; ${this.state}, ${this.game.state}`);
+        if (this.state !== ManagerStateInProgress || (this.game.state !== GameStateMovePart1 && this.game.state.GameStateMovePart2)) {
+            console.log(`ignoring cell click, manager or game not in proper state`);
+            return;
+        }
+        this.game.flipCard(x, y);
+    }
 
-//     setState(state) {
-//         switch (state) {
-//             case FiveStateConfig:
-//                 setShow(configDiv, true);
-//                 setShow(gameDiv, false);
-//                 break;
-//             case FiveStateInProgress:
-//                 setShow(configDiv, false);
-//                 setShow(gameDiv, true);
-//                 break;
-//             default:
-//                 throw new Error(`unhandled state ${state}`);
-//         }
-//         this.state = state;
-//     }
+    didClickStart() {
+        console.log("manager: start");
+        if (this.state !== ManagerStateConfig) {
+            throw new Error(`unable to start: in state ${this.state}`);
+        }
+        let playerCount = parseInt(configPlayerCountDropdown.value, 10);
+        this.players = PlayerEmojis.slice(playerCount); // TODO get rid of this side communication channel
+        this.setState(ManagerStateInProgress);
+    }
 
-//     didClickStart() {
-//         console.log("five: start");
-//         if (this.state !== FiveStateConfig) {
-//             throw new Error(`unable to start: in state ${this.state}`);
-//         }
-//         this.setState(FiveStateInProgress);
-//         let width = 0;
-//         let height = 0;
-//         let size = configSizeDropdown.value;
-//         switch (size) {
-//             case BoardSizeTiny:
-//                 width = 2;
-//                 height = 2;
-//                 break;
-//             case BoardSizeSmall:
-//                 width = 8;
-//                 height = 8;
-//                 break;
-//             case BoardSizeMedium:
-//                 width = 10;
-//                 height = 10;
-//                 break;
-//             case BoardSizeLarge:
-//                 width = 15;
-//                 height = 15;
-//                 break;
-//             default:
-//                 throw new Error(`invalid size ${size}`);
-//         }
-//         this.boardManager.startNewGame(width, height);
-//     }
+    didClickRestart() {
+        console.log("manager: restart");
+        if (this.state !== ManagerStateOver) {
+            throw new Error(`unable to start: in state ${this.state}`);
+        }
+        this.setState(ManagerStateConfig);
+    }
 
-//     didClickRestart() {
-//         console.log("five: restart");
-//         if (this.state !== FiveStateInProgress) {
-//             throw new Error(`unable to start: in state ${this.state}`);
-//         }
-//         this.setState(FiveStateConfig);
-//     }
-// }
+    startNewGame(width, height) {
+        if (this.state !== ManagerStateConfig) {
+            throw new Error(`unable to start game from state ${this.state}`);
+        }
+        this.game = new Game(width, height, this.players, this.isRandom, (gameState) => this.didChangeGameState(gameState));
+        this.setUpTable(width, height);
+    }
 
-// class BoardManager {
-//     constructor() {
-//         this.game = null;
-//         this.cellRows = [];
-//         gameFirstPlayer.textContent = `Player 1: ${Potato}`;
-//         gameSecondPlayer.textContent = `Player 2: ${Tomato}`;
-//         this.players = [Potato, Tomato];
-//     }
+    setUpTable(xCount, yCount) {
+        // 1. clear out old table children
+        // 2. create new table children
+        // 3. add listeners
 
-//     startNewGame(width, height) {
-//         if (this.state === GameStateInProgress) {
-//             throw new Error(`unable to start game: game already in progress`);
-//         }
-//         // 1. create board model
-//         this.game = new Game(width, height, this.players);
-//         // 2. clear out old table children
-//         // 3. create new table children
-//         // 4. add listeners
-//         this.setUpTable(width, height);
-//         // 5. set DOM state
-//         this.setState(GameStateInProgress);
-//         this.setActivePlayer(this.game.nextPlayer);
-//     }
+        // TODO is this explicit removal necessary?
+        this.cellRows.forEach(row => row.forEach(e => e.remove()));
 
-//     setUpTable(xCount, yCount) {
-//         // this.cellRows.forEach(row => row.forEach(e => e.remove()));
-//         gameBoardTbody.textContent = '';
-//         this.cellRows = [];
+        gameBoardTbody.textContent = '';
+        this.cellRows = [];
 
-//         let self = this;
-//         for (let y = 0; y < yCount; y++) {
-//             let domRow = gameBoardTbody.insertRow();
-//             let modelRow = [];
-//             for (let x = 0; x < xCount; x++) {
-//                 let xC = x; // TODO is it necessary to copy to avoid capture of mutable variable?
-//                 let yC = y;
-//                 let cell = domRow.insertCell();
-//                 cell.setAttribute("x", x);
-//                 cell.setAttribute("y", y);
-//                 cell.classList.add(boardCellClass);
-//                 cell.addEventListener('click', function() {
-//                     self.didClickCell(cell, xC, yC);
-//                 });
-//                 modelRow.push(cell);
-//             }
-//             this.cellRows.push(modelRow);
-//         }
-//     }
+        let self = this;
+        for (let y = 0; y < yCount; y++) {
+            let domRow = gameBoardTbody.insertRow();
+            let modelRow = [];
+            for (let x = 0; x < xCount; x++) {
+                let xC = x;
+                let yC = y;
+                let cell = domRow.insertCell();
+                cell.setAttribute("x", x);
+                cell.setAttribute("y", y);
+                cell.classList.add(boardCellClass);
+                cell.addEventListener('click', function() {
+                    self.didClickCell(cell, xC, yC);
+                });
+                modelRow.push(cell);
+            }
+            this.cellRows.push(modelRow);
+        }
+    }
 
-//     setActivePlayer(playerIndex) {
-//         console.log(`set active player to index ${playerIndex}`);
-//         if (playerIndex === 0) {
-//             gameFirstPlayer.classList.add(playerTurnClass);
-//             gameSecondPlayer.classList.remove(playerTurnClass);
-//         } else if (playerIndex === 1) {
-//             gameFirstPlayer.classList.remove(playerTurnClass);
-//             gameSecondPlayer.classList.add(playerTurnClass);
-//         } else {
-//             gameFirstPlayer.classList.remove(playerTurnClass);
-//             gameSecondPlayer.classList.remove(playerTurnClass);
-//         }
-//     }
+    setActivePlayer(playerIndex) {
+        console.log(`set active player to index ${playerIndex}`);
+        playerElements.forEach((e, ix) => {
+            if (ix === playerIndex) {
+                e.classList.add(playerTurnClass);
+            } else {
+                e.classList.remove(playerTurnClass);
+            }
+        })
+    }
 
-//     didClickCell(cell, x, y) {
-//         console.log("didClickCell: %d, %d", x, y);
-//         this.game.move(x, y);
-//         cell.appendChild(document.createTextNode(this.game.board[x][y]));
-//         if (this.game.state !== GameStateInProgress) {
-//             this.setState(this.game.state);
-//             if (this.game.winner) {
-//                 console.log("winner: %s", JSON.stringify(this.game.winner));
-//                 let self = this;
-//                 this.game.winner.positions.forEach(function(pos) {
-//                     let x = pos[0];
-//                     let y = pos[1];
-//                     self.cellRows[y][x].classList.add("winner-position");
-//                 });
-//             }
-//             this.setActivePlayer(null);
-//         } else {
-//             this.setActivePlayer(this.game.nextPlayer);
-//         }
-//     }
+    setFaceUp(coord) {
+        throw new Error("TODO");
+    }
 
-//     removeCellListeners() {
-//         for (let y = 0; y < this.cellRows.length; y++) {
-//             let row = this.cellRows[y];
-//             for (let x = 0; x < row.length; x++) {
-//                 let cell = row[x];
-//                 let cellCopy = cell.cloneNode(true);
-//                 cell.parentNode.replaceChild(cellCopy, cell);
-//                 row[x] = cellCopy;
-//             }
-//         }
-//     }
+    setFaceDown(coord) {
+        throw new Error("TODO");
+    }
 
-//     setState(state) {
-//         switch (state) {
-//             case GameStateInProgress:
-//                 setShow(gameRestartButton, false);
-//                 break;
-//             case GameStateWon:
-//             case GameStateNoMoves:
-//                 setShow(gameRestartButton, true);
-//                 this.removeCellListeners();
-//                 break;
-//             default:
-//                 throw new Error(`invalid state ${state}`);
-//         }
-//     }
-// }
+    didChangeGameState(gameState) {
+        let self = this;
+        switch (gameState) {
+            case GameStateMovePart1:
+                // from new game, move part3:
+                this.setActivePlayer(playerIndex);
+                // from move part3:
+                //   if found pair: remove cards from board; update pair lists TODO
+                //   if no pair: flip cards back to face down TODO
+                break;
+            case GameStateMovePart2:
+                // flip first card face up
+                this.setFaceUp(this.game.faceUp[this.game.faceUp.length - 1]);
+                break;
+            case GameStateMovePart3:
+                // flip second card face up
+                this.setFaceUp(this.game.faceUp[this.game.faceUp.length - 1]);
+                // set up timer for next state change
+                setTimeout(function() {
+                    self.game.setState(GameStateMovePart1);
+                }, 5000);
+                // ignore clicks until state change -> move part1
+                break;
+            case GameStateOver:
+                this.setState(ManagerStateOver);
+                break;
+            default:
+                throw new Error(`invalid game state ${state}`);
+        }
+        throw new Error(`TODO ${gameState}, ${playerIndex}`);
+    }
+
+    setState(state) {
+        switch (state) {
+            case ManagerStateConfig:
+                setShow(configDiv, true);
+                setShow(gameDiv, false);
+                break;
+            case ManagerStateInProgress:
+                this.startNewGame(8, 8); // TODO configurable size?
+                setShow(configDiv, false);
+                setShow(gameDiv, true);
+                setShow(gameRestartButton, false);
+                break;
+            case ManagerStateOver:
+                setShow(gameRestartButton, true);
+                break;
+            default:
+                throw new Error(`invalid manager state ${this.state}`);
+        }
+        this.state = state;
+    }
+}
 
 // Fisher-Yates shuffle https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 function shuffle(xs) {
@@ -234,10 +208,12 @@ function shuffle(xs) {
 
 const GameStateMovePart1 = 'gamestate: move part 1';
 const GameStateMovePart2 = 'gamestate: move part 2';
-const GameStartOver = 'gamestate: over';
+const GameStateMovePart3 = 'gamestate: move part 3';
+const GameStateOver = 'gamestate: over';
 
 class Game {
-    constructor(width, height, players, isRandom) {
+    constructor(width, height, players, isRandom, didChangeState) {
+        this.didChangeState = didChangeState;
         this.playerPairs = [];
         let self = this;
         players.forEach(function(p, ix) {
@@ -250,9 +226,8 @@ class Game {
             // }
             self.playerPairs.push([]);
         })
-        if (players.length !== 2) {
-            // TODO allow 1-4 ?
-            throw new Error("expected 2 players, found %d", players.length);
+        if (players.length < 1 || players.length > 4) {
+            throw new Error("expected 1 - 4 players, found %d", players.length);
         }
         this.players = players;
         this.width = width;
@@ -305,31 +280,49 @@ class Game {
 
         if (this.state === GameStateMovePart1) {
             this.faceUp = [x, y];
-            this.state = GameStateMovePart2;
+            this.setState(GameStateMovePart2);
         } else if (this.state === GameStateMovePart2) {
             if (x === this.faceUp[0] && y === this.faceUp[1]) {
                 throw new Error(`invalid move, already face up: ${x, y}`);
             }
+            // found a matching pair: add it to the player's pile
             if (this.board[x][y] === this.board[this.faceUp[0]][this.faceUp[1]]) {
                 let pairs = this.playerPairs[this.nextPlayer];
                 pairs.push([this.faceUp, [x, y]]);
                 this.playerPairs[this.nextPlayer] = pairs;
                 this.remainingPairs--;
+                // no more cards left: game is over
                 if (this.remainingPairs === 0) {
-                    this.state = GameStartOver;
+                    this.setState(GameStateOver);
                     return;
                 }
             }
-            this.state = GameStateMovePart1;
-            this.faceUp = null;
-            this.nextPlayer++;
-            if (this.nextPlayer >= this.players.length) {
-                this.nextPlayer = 0;
-            }
+            this.setState(GameStateMovePart3);
             console.log(`continuing game, switching to player ${this.nextPlayer}`);
         } else {
             throw new Error(`cannot move: game not in right state (state: ${this.state})`);
         }
+    }
+
+    setState(state) {
+        switch (state) {
+            case GameStateMovePart1:
+                this.faceUp = null;
+                break;
+            case GameStateMovePart2:
+                break;
+            case GameStateMovePart3:
+                this.nextPlayer++;
+                if (this.nextPlayer >= this.players.length) {
+                    this.nextPlayer = 0;
+                }
+                break;
+            case GameStateOver:
+                break;
+            default:
+                throw new Error(`invalid game state ${state}`);
+        }
+        this.didChangeState(state);
     }
 
     isValid() {

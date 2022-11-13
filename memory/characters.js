@@ -1,5 +1,21 @@
 'use strict';
 
+
+const peopleEmojis = {
+    elf         : '\uD83E\uDDDD',
+    manDancing  : '\uD83D\uDD7A',
+    manGuard    : '\uD83D\uDC82',
+    ninja       : '\uD83E\uDD77',
+    troll       : '\uD83E\uDDCC',
+    womanDancing: '\uD83D\uDC83',
+    vampire     : '\uD83E\uDDDB',
+    zombie      : '\uD83E\uDDDF',
+}
+
+
+const CardBack = '\uD83C\uDCA0';
+
+
 const characters = {
     'blueberries'   : '\uD83E\uDED0',
     'bell pepper'   : '\uD83E\uDED1',
