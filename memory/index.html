@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Memory</title>
+    <link href="./index.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+
+<div class="wrapper-vertical">
+    <h1>Memory</h1>
+
+    <div id="config" class="wrapper-vertical">
+        <select id="config-size">
+            <option value="tiny">size: tiny</option>
+            <option value="small">size: small</option>
+            <option value="medium" selected>size: medium</option>
+            <option value="large">size: large</option>
+        </select>
+        <button id="config-start">Start</button>
+    </div>
+
+    <div id="game" class="wrapper-vertical">
+        <div id="game-header" class="wrapper-vertical">
+            <div class="wrapper-horizontal">
+                <div id="game-first-player"></div>
+                <div id="game-second-player" class="right-aligned"></div>
+            </div>
+            <button id="game-restart">Restart</button>
+        </div>
+        <table id="game-board">
+            <tbody id="game-board-tbody"></tbody>
+        </table>
+    </div>
+</div>
+
+
+<script src="./characters.js"></script>
+<script src="./index.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,41 @@
+.wrapper-horizontal {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.wrapper-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.right-aligned {
+    margin-left: auto;
+}
+
+#game-board {
+    border-collapse: separate;
+    border-spacing: 10px;
+}
+
+th, td {
+    text-align: center;
+    border: 3px dashed lightblue;
+    font-size: xx-large;
+    width: 40px;
+    height: 40px;
+}
+
+.winner-position {
+    background-color: red;
+}
+
+.player-turn {
+    font-size: x-large;
+    border: 2px double;
+}
