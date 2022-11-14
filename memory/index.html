@@ -19,8 +19,8 @@
             <option value="4">Players: four</option>
         </select>
         <select id="config-size">
-            <option value="tiny" selected>Size: tiny</option>
-            <option value="small">Size: small</option>
+            <option value="tiny">Size: tiny</option>
+            <option value="small" selected>Size: small</option>
             <option value="medium">Size: medium</option>
             <option value="large">Size: large</option>
         </select>
@@ -30,17 +30,12 @@
     <div id="game" class="wrapper-horizontal">
         <div id="game-score" class="wrapper-vertical">
             <table id="game-player">
-                <caption>Scores</caption>
                 <tbody id="game-player-tbody"></tbody>
             </table>
         </div>
 
         <div id="game" class="wrapper-vertical">
             <div id="game-header" class="wrapper-vertical">
-                <div class="wrapper-horizontal">
-                    <div id="game-first-player"></div>
-                    <div id="game-second-player" class="right-aligned"></div>
-                </div>
                 <button id="game-restart">Restart</button>
             </div>
             <table id="game-board">

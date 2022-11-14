@@ -267,7 +267,7 @@ class GameCell {
         switch (this.state) {
             case GameCellStateFaceDown: return CardBack;
             case GameCellStateFaceUp: return this.char;
-            case GameCellStateCaptured: return '.'; // TODO owner?  maybe when game is finished?
+            case GameCellStateCaptured: return ''; // TODO owner?  maybe when game is finished?
             default: throw new Error(`invalid GameCellState ${this.state}`);
         }
     }
@@ -423,8 +423,8 @@ class Game {
         for (let y = 0; y < this.height; y++) {
             let row = [];
             for (let x = 0; x < this.width; x++) {
-                // console.log(`at ${x}, ${y}: ${JSON.stringify(this.board[x][y])}`); // TODO
-                row.push(`[${this.board[x][y].domTextContent}, ${this.board[x][y].char}]`);
+                let s = this.board[x][y].domTextContent;
+                row.push(`[${s ? s : ' '}, ${this.board[x][y].char}]`);
             }
             rows.push(row.join(" "));
         }

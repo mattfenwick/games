@@ -14,10 +14,6 @@
     gap: 20px;
 }
 
-.right-aligned {
-    margin-left: auto;
-}
-
 #game-board {
     border-collapse: separate;
     border-spacing: 10px;
@@ -31,10 +27,6 @@
     height: 80px;
     margin: 0px;
     padding: 0px;
-}
-
-#game-score caption {
-    font-size: 30px;
 }
 
 #game-score td {
