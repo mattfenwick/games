@@ -56,14 +56,14 @@ class Five {
     }
 
     didClickStart() {
-        console.log("five: start");
+        let size = configSizeDropdown.value;
+        console.log(`five: start; size ${size}`);
         if (this.state !== FiveStateConfig) {
             throw new Error(`unable to start: in state ${this.state}`);
         }
         this.setState(FiveStateInProgress);
         let width = 0;
         let height = 0;
-        let size = configSizeDropdown.value;
         switch (size) {
             case BoardSizeTiny:
                 width = 2;
@@ -106,7 +106,7 @@ class BoardManager {
     }
 
     startNewGame(width, height) {
-        if (this.game.state === GameStateInProgress) {
+        if (this.game !== null && this.game.state === GameStateInProgress) {
             throw new Error(`unable to start game: game already in progress`);
         }
         // 1. create board model
