@@ -22,7 +22,7 @@ function setShow(element, shouldShow) {
 // constants
 const FaceUpWaitSeconds = 2; // TODO use 5?
 
-const PlayerEmojis = shuffle(Object.keys(peopleEmojis));
+const PlayerEmojis = shuffle(Object.values(PeopleEmojis));
 
 const BoardSizeTiny     = 'tiny';
 const BoardSizeSmall    = 'small';
@@ -48,7 +48,7 @@ const GameStateMovePart3    = 'gamestate: move part 3';
 const GameStateOver         = 'gamestate: over';
 
 const boardCellClass = 'game-board-cell';
-const playerTurnClass = 'player-turn';
+const activePlayerClass = 'game-active-player';
 // end constants
 
 
@@ -64,6 +64,7 @@ let gameDiv             = document.getElementById('game');
 let gameScoreDiv        = document.getElementById('game-score');
 let gameBoardTable      = document.getElementById('game-board');
 let gameBoardTbody      = document.getElementById('game-board-tbody');
+let gamePlayerTbody     = document.getElementById('game-player-tbody');
 let gameRestartButton   = document.getElementById('game-restart');
 // end dom elements
 
@@ -73,6 +74,7 @@ class Manager {
         this.isRandom = isRandom;
         this.game = null;
         this.cellRows = [];
+        this.scoreRows = [];
         this.setState(ManagerStateConfig);
     }
 
@@ -118,8 +120,7 @@ class Manager {
         }
         this.game = new Game(width, height, this.players, this.isRandom, (gameState) => this.didChangeGameState(gameState));
         this.setUpTable(width, height);
-        // TODO make a nice table or something?
-        gameScoreDiv.textContent = JSON.stringify(this.game.playerPairs);
+        this.refreshScoreArea(this.game.getPlayerScores());
     }
 
     setUpTable(xCount, yCount) {
@@ -154,15 +155,22 @@ class Manager {
         }
     }
 
-    setActivePlayer(playerIndex) {
-        console.log(`set active player to index ${playerIndex} -- TODO`);
-        // playerElements.forEach((e, ix) => {
-        //     if (ix === playerIndex) {
-        //         e.classList.add(playerTurnClass);
-        //     } else {
-        //         e.classList.remove(playerTurnClass);
-        //     }
-        // })
+    refreshScoreArea(players) {
+        console.log(`updating score area: ${players}`);
+        // this is sloppy: we'll blow away everything, then recreate
+        this.scoreRows.forEach(row => row.remove());
+        this.scoreRows = [];
+        let self = this;
+
+        players.forEach(function(p) {
+            let row = gamePlayerTbody.insertRow();
+            if (p.isActive) {
+                row.classList.add(activePlayerClass);
+            }
+            row.insertCell().textContent = p.symbol;
+            row.insertCell().textContent = p.score;
+            self.scoreRows.push(row);
+        })
     }
 
     updateCardText(cell) {
@@ -173,23 +181,14 @@ class Manager {
     didChangeGameState(event) {
         console.log(`manager: didChangeGameState to ${JSON.stringify(event)}`);
         let self = this;
+        event.updateCells.forEach(coord => this.updateCardText(coord));
+        this.refreshScoreArea(this.game.getPlayerScores());
         switch (event.state) {
             case GameStateMovePart1:
-                //   update card text
-                event.updateCells.forEach(coord => this.updateCardText(coord));
-                // TODO:
-                //   update player turn
-                //   update scores
-                this.setActivePlayer(event.updatePlayerTurn);
                 break;
             case GameStateMovePart2:
-                // flip first card face up
-                event.updateCells.forEach(coord => this.updateCardText(coord));
                 break;
             case GameStateMovePart3:
-                // flip second card face up
-                event.updateCells.forEach(coord => this.updateCardText(coord));
-                // set up timer for next state change
                 console.log(`setting timeout`);
                 setTimeout(function() {
                     console.log(`running timeout`);
@@ -198,9 +197,8 @@ class Manager {
                 // ignore clicks until state change -> move part1
                 break;
             case GameStateOver:
+                // TODO
                 //   update card text -- all?  or just the active 2?
-                //   update player turn
-                //   update scores
                 this.setState(ManagerStateOver);
                 break;
             default:
@@ -310,7 +308,7 @@ class Game {
             throw new Error(`invalid size: must be even, got ${size}`);
         }
         let half = size / 2;
-        let availableChars = Object.keys(characters);
+        let availableChars = Object.values(FoodEmojis);
         if (isRandom) {
             availableChars = shuffle(availableChars);
         }
@@ -326,7 +324,7 @@ class Game {
         let i = 0;
         for (let row = 0; row < width; row++) {
             for (let col = 0; col < height; col++) {
-                this.board[row][col] = new GameCell(row, col, characters[charPairs[i]]);
+                this.board[row][col] = new GameCell(row, col, charPairs[i]);
                 i++;
             }
         }
@@ -417,6 +415,16 @@ class Game {
         }
         this.state = event.state;
         this.didChangeState(event);
+    }
+
+    getPlayerScores() {
+        return this.players.map((p, ix) => {
+            return {
+                'symbol': p,
+                'isActive': ix === this.nextPlayer,
+                'score': this.playerPairs[ix].length,
+            };
+        });
     }
 
     isValid() {

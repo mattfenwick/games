@@ -1,7 +1,7 @@
 'use strict';
 
 
-const peopleEmojis = {
+const PeopleEmojis = {
     elf         : '\uD83E\uDDDD',
     manDancing  : '\uD83D\uDD7A',
     manGuard    : '\uD83D\uDC82',
@@ -16,7 +16,7 @@ const peopleEmojis = {
 const CardBack = '\uD83C\uDCA0';
 
 
-const characters = {
+const FoodEmojis = {
     'blueberries'   : '\uD83E\uDED0',
     'bell pepper'   : '\uD83E\uDED1',
     'olive'         : '\uD83E\uDED2',

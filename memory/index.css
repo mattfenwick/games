@@ -23,7 +23,7 @@
     border-spacing: 10px;
 }
 
-th, td {
+#game-board td {
     text-align: center;
     border: 3px dashed lightblue;
     font-size: 75px;
@@ -33,7 +33,18 @@ th, td {
     padding: 0px;
 }
 
-.player-turn {
+#game-score caption {
+    font-size: 30px;
+}
+
+#game-score td {
+    text-align: center;
+    font-size: 60px;
+    padding: 10px;
+}
+
+.game-active-player {
     font-size: x-large;
+    background-color: red;
     border: 2px double;
 }
