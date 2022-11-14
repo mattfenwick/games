@@ -277,18 +277,7 @@ class Game {
     constructor(width, height, players, isRandom, didChangeState) {
         console.log(`new game: ${width}, ${height}, ${players}, ${isRandom}, ${didChangeState}`);
         this.didChangeState = didChangeState;
-        this.playerPairs = [];
-        let self = this;
-        players.forEach(function(p, ix) {
-            if (!p) {
-                throw new Error("invalid player: falsy at index " + ix);
-            }
-            // TODO should unique names be enforced?
-            // if (self.playerPairs.has(p)) {
-            //     throw new Error("duplicate player name: " + p);
-            // }
-            self.playerPairs.push([]);
-        })
+        this.playerPairs = players.map(_ => []);
         if (players.length < 1 || players.length > 4) {
             throw new Error(`expected 1 - 4 players, found ${players.length}, ${players}`);
         }
@@ -400,19 +389,6 @@ class Game {
 
     setState(event) {
         console.log(`game: set state to ${event}\n${this.toPrettyString()}`);
-        // TODO why is this switch here?
-        switch (event.state) {
-            case GameStateMovePart1:
-                break;
-            case GameStateMovePart2:
-                break;
-            case GameStateMovePart3:
-                break;
-            case GameStateOver:
-                break;
-            default:
-                throw new Error(`invalid game state ${state}`);
-        }
         this.state = event.state;
         this.didChangeState(event);
     }
