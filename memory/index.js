@@ -28,6 +28,7 @@ const BoardSizeTiny     = 'tiny';
 const BoardSizeSmall    = 'small';
 const BoardSizeMedium   = 'medium';
 const BoardSizeLarge    = 'large';
+const BoardSizeXL       = 'xl';
 
 function BoardSizeDimensions(boardSize) {
     switch (boardSize) {
@@ -35,6 +36,19 @@ function BoardSizeDimensions(boardSize) {
         case BoardSizeSmall: return [4, 4];
         case BoardSizeMedium: return [9, 4];
         case BoardSizeLarge: return [12, 6];
+        case BoardSizeXL: return [14, 8];
+        default: throw new Error(`invalid board size ${boardSize}`);
+    }
+}
+
+function FaceUpWaitMilliseconds(boardSize) {
+    switch (boardSize) {
+        case BoardSizeTiny: return 3000;
+        case BoardSizeSmall: return 2500;
+        case BoardSizeMedium: return 2000;
+        case BoardSizeLarge: return 1500;
+        case BoardSizeXL: return 1000;
+        default: throw new Error(`invalid board size ${boardSize}`);
     }
 }
 
@@ -47,7 +61,7 @@ const GameStateMovePart2    = 'gamestate: move part 2';
 const GameStateMovePart3    = 'gamestate: move part 3';
 const GameStateOver         = 'gamestate: over';
 
-const boardCellClass = 'game-board-cell';
+const boardCellClass    = 'game-board-cell';
 const activePlayerClass = 'game-active-player';
 // end constants
 
@@ -101,6 +115,7 @@ class Manager {
         let size = BoardSizeDimensions(configSizeDropdown.value);
         this.width = size[0];
         this.height = size[1];
+        this.faceUpWaitMilliseconds = FaceUpWaitMilliseconds(configSizeDropdown.value);
 
         console.log(`players: ${this.players}, ${playerCount}, ${this.players.slice(0, playerCount)}`);
         this.setState(ManagerStateInProgress);
@@ -180,7 +195,6 @@ class Manager {
 
     didChangeGameState(event) {
         console.log(`manager: didChangeGameState to ${JSON.stringify(event)}`);
-        let self = this;
         event.updateCells.forEach(coord => this.updateCardText(coord));
         this.refreshScoreArea(this.game.getPlayerScores());
         switch (event.state) {
@@ -190,10 +204,11 @@ class Manager {
                 break;
             case GameStateMovePart3:
                 console.log(`setting timeout`);
+                let self = this;
                 setTimeout(function() {
                     console.log(`running timeout`);
                     self.game.finishTurn();
-                }, FaceUpWaitSeconds * 1000);
+                }, this.faceUpWaitMilliseconds);
                 // ignore clicks until state change -> move part1
                 break;
             case GameStateOver:

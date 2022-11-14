@@ -16,7 +16,6 @@
 
 #game-board {
     border-collapse: separate;
-    border-spacing: 10px;
 }
 
 #game-board td {
