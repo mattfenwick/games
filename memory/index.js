@@ -165,52 +165,42 @@ class Manager {
         // })
     }
 
-    clearCardText(coord) {
-        let x = coord[0];
-        let y = coord[1];
-        this.cellRows[y][x].textContent = '';
+    updateCardText(cell) {
+        console.log(`${cell}, ${cell.x}, ${cell.y}, ${this.cellRows.length}, ${this.game.board.length}`);
+        this.cellRows[cell.y][cell.x].textContent = this.game.board[cell.x][cell.y].domTextContent;
     }
 
-    setCardDirection(coord, isFaceUp) {
-        let x = coord[0];
-        let y = coord[1];
-        let text = isFaceUp ? this.game.board[x][y] : CardBack;
-        console.log(`set card direction: ${coord}, ${isFaceUp}, ${text}`);
-        this.cellRows[y][x].textContent = text;
-    }
-
-    didChangeGameState(gameState) {
-        console.log(`manager: didChangeGameState to ${gameState}`);
+    didChangeGameState(event) {
+        console.log(`manager: didChangeGameState to ${JSON.stringify(event)}`);
         let self = this;
-        switch (gameState) {
+        switch (event.state) {
             case GameStateMovePart1:
-                this.setActivePlayer(this.game.nextPlayer);
+                //   update card text
+                event.updateCells.forEach(coord => this.updateCardText(coord));
+                // TODO:
+                //   update player turn
+                //   update scores
+                this.setActivePlayer(event.updatePlayerTurn);
                 break;
             case GameStateMovePart2:
                 // flip first card face up
-                this.setCardDirection(this.game.faceUp[this.game.faceUp.length - 1], true);
+                event.updateCells.forEach(coord => this.updateCardText(coord));
                 break;
             case GameStateMovePart3:
                 // flip second card face up
-                this.setCardDirection(this.game.faceUp[this.game.faceUp.length - 1], true);
+                event.updateCells.forEach(coord => this.updateCardText(coord));
                 // set up timer for next state change
                 console.log(`setting timeout`);
                 setTimeout(function() {
                     console.log(`running timeout`);
-                    for (const coord in this.faceUp) {
-                        if (self.game.pairFound) {
-                            self.clearCardText(coord);
-                            // TODO update pair lists
-                            gameScoreDiv.textContent = JSON.stringify(self.game.playerPairs);
-                        } else {
-                            self.setCardDirection(coord, false);
-                        }
-                    }
-                    self.game.setState(GameStateMovePart1);
+                    self.game.finishTurn();
                 }, FaceUpWaitSeconds * 1000);
                 // ignore clicks until state change -> move part1
                 break;
             case GameStateOver:
+                //   update card text -- all?  or just the active 2?
+                //   update player turn
+                //   update scores
                 this.setState(ManagerStateOver);
                 break;
             default:
@@ -241,6 +231,49 @@ class Manager {
     }
 }
 
+const GameCellStateFaceDown = 'GameCellStateFaceDown';
+const GameCellStateFaceUp   = 'GameCellStateFaceUp';
+const GameCellStateCaptured = 'GameCellStateCaptured';
+
+class GameCell {
+    constructor(x, y, char) {
+        this.x = x;
+        this.y = y;
+        this.char = char;
+        this.state = GameCellStateFaceDown;
+        this.owner = null;
+    }
+
+    flipFaceUp() {
+        if (this.state !== GameCellStateFaceDown) {
+            throw new Error(`unable to flip face up: in state ${this.state}`);
+        }
+        this.state = GameCellStateFaceUp;
+    }
+
+    flipFaceDown() {
+        if (this.state !== GameCellStateFaceUp) {
+            throw new Error(`unable to flip face down: in state ${this.state}`);
+        }
+        this.state = GameCellStateFaceDown;
+    }
+
+    capture() {
+        if (this.state !== GameCellStateFaceUp) {
+            throw new Error(`unable to capture: in state ${this.state}`);
+        }
+        this.state = GameCellStateCaptured;
+    }
+
+    get domTextContent() {
+        switch (this.state) {
+            case GameCellStateFaceDown: return CardBack;
+            case GameCellStateFaceUp: return this.char;
+            case GameCellStateCaptured: return '.'; // TODO owner?  maybe when game is finished?
+            default: throw new Error(`invalid GameCellState ${this.state}`);
+        }
+    }
+}
 
 class Game {
     constructor(width, height, players, isRandom, didChangeState) {
@@ -293,11 +326,12 @@ class Game {
         let i = 0;
         for (let row = 0; row < width; row++) {
             for (let col = 0; col < height; col++) {
-                this.board[row][col] = characters[charPairs[i]];
+                this.board[row][col] = new GameCell(row, col, characters[charPairs[i]]);
                 i++;
             }
         }
 
+        // TODO how to handle these ?  perf optimization ?
         this.faceUp = null;
         this.remainingPairs = half;
     }
@@ -310,73 +344,86 @@ class Game {
         if (!(y >= 0 && y < this.height)) {
             throw new Error("invalid y coordinate: " + y);
         }
-        if (this.board[x][y] === null) {
-            throw new Error(`already taken: ${x}, ${y}`);
+        let cell = this.board[x][y];
+        if (cell.state !== GameCellStateFaceDown) {
+            throw new Error(`already face up or captured: ${x}, ${y}`);
         }
 
         if (this.state === GameStateMovePart1) {
-            this.faceUp = [[x, y]];
-            this.setState(GameStateMovePart2);
+            cell.flipFaceUp();
+            this.faceUp = [cell];
+            this.setState({state: GameStateMovePart2, updateCells: [cell]});
         } else if (this.state === GameStateMovePart2) {
-            if (x === this.faceUp[0][0] && y === this.faceUp[0][1]) {
-                throw new Error(`invalid move, already face up: ${x}, ${y}`);
-            }
-            this.faceUp.push([x, y]);
-            // found a matching pair: add it to the player's pile
-            let x1 = this.faceUp[0][0];
-            let y1 = this.faceUp[0][1];
-            if (this.board[x][y] === this.board[x1][y1]) {
-                let pairs = this.playerPairs[this.nextPlayer];
-                pairs.push([this.faceUp, [x, y]]);
-                this.playerPairs[this.nextPlayer] = pairs;
-                this.remainingPairs--;
-                this.board[x][y] = null;
-                this.board[x1][y1] = null;
-                // no more cards left: game is over
-                if (this.remainingPairs === 0) {
-                    this.setState(GameStateOver);
-                    return;
-                }
-                // TODO this datum is a hack -- need to get rid of side channel communication
-                this.pairFound = true;
-            } else {
-                this.pairFound = false;
-            }
-            this.setState(GameStateMovePart3);
-            console.log(`continuing game, switching to player ${this.nextPlayer}`);
+            cell.flipFaceUp();
+            this.faceUp.push(cell);
+            this.setState({state: GameStateMovePart3, updateCells: [cell]});
         } else {
             throw new Error(`cannot move: game not in right state (state: ${this.state})`);
         }
     }
 
-    setState(state) {
-        console.log(`game: set state to ${state}\n${this.toPrettyString()}`);
-        switch (state) {
+    finishTurn() {
+        if (this.state !== GameStateMovePart3) {
+            throw new Error(`invalid state to finish turn: ${this.state}`);
+        }
+
+        let faceUp = this.faceUp;
+        let fst = faceUp[0];
+        let snd = faceUp[1];
+
+        let foundPair = null;
+
+        // found a matching pair: add it to the player's pile
+        if (fst.char === snd.char) {
+            foundPair = {player: this.nextPlayer};
+            fst.capture();
+            snd.capture();
+            this.playerPairs[this.nextPlayer].push(faceUp);
+            this.remainingPairs--;
+            // no more cards left: game is over
+            if (this.remainingPairs === 0) {
+                this.setState({state: GameStateOver, updateCells: this.faceUp, foundPair: foundPair, updatePlayerTurn: null});
+                return;
+            }
+        } else {
+            fst.flipFaceDown();
+            snd.flipFaceDown();
+        }
+
+        this.nextPlayer++;
+        if (this.nextPlayer >= this.players.length) {
+            this.nextPlayer = 0;
+        }
+        this.faceUp = null;
+
+        this.setState({state: GameStateMovePart1, updateCells: faceUp, foundPair: foundPair, updatePlayerTurn: this.nextPlayer});
+        console.log(`continuing game, switching to player ${this.nextPlayer}`);
+    }
+
+    setState(event) {
+        console.log(`game: set state to ${event}\n${this.toPrettyString()}`);
+        // TODO why is this switch here?
+        switch (event.state) {
             case GameStateMovePart1:
-                this.faceUp = null;
                 break;
             case GameStateMovePart2:
                 break;
             case GameStateMovePart3:
-                this.nextPlayer++;
-                if (this.nextPlayer >= this.players.length) {
-                    this.nextPlayer = 0;
-                }
                 break;
             case GameStateOver:
                 break;
             default:
                 throw new Error(`invalid game state ${state}`);
         }
-        this.state = state;
-        this.didChangeState(state);
+        this.state = event.state;
+        this.didChangeState(event);
     }
 
     isValid() {
         let counts = new Map();
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
-                let c = this.board[x][y];
+                let c = this.board[x][y].char;
                 if (!counts.has(c)) {
                     counts.set(c, 0);
                 }
@@ -392,7 +439,8 @@ class Game {
         for (let y = 0; y < this.height; y++) {
             let row = [];
             for (let x = 0; x < this.width; x++) {
-                row.push(this.board[x][y] ? this.board[x][y] : ".");
+                // console.log(`at ${x}, ${y}: ${JSON.stringify(this.board[x][y])}`); // TODO
+                row.push(`[${this.board[x][y].domTextContent}, ${this.board[x][y].char}]`);
             }
             rows.push(row.join(" "));
         }
