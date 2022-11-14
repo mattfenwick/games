@@ -13,25 +13,36 @@
 
     <div id="config" class="wrapper-vertical">
         <select id="config-player-count">
-            <option value="1">one</option>
-            <option value="2" selected>two</option>
-            <option value="3" selected>three</option>
-            <option value="4">four</option>
+            <option value="1">Players: one</option>
+            <option value="2" selected>Players: two</option>
+            <option value="3">Players: three</option>
+            <option value="4">Players: four</option>
+        </select>
+        <select id="config-size">
+            <option value="tiny" selected>Size: tiny</option>
+            <option value="small">Size: small</option>
+            <option value="medium">Size: medium</option>
+            <option value="large">Size: large</option>
         </select>
         <button id="config-start">Start</button>
     </div>
 
-    <div id="game" class="wrapper-vertical">
-        <div id="game-header" class="wrapper-vertical">
-            <div class="wrapper-horizontal">
-                <div id="game-first-player"></div>
-                <div id="game-second-player" class="right-aligned"></div>
-            </div>
-            <button id="game-restart">Restart</button>
+    <div id="game" class="wrapper-horizontal">
+        <div id="game-score" class="wrapper-vertical">
         </div>
-        <table id="game-board">
-            <tbody id="game-board-tbody"></tbody>
-        </table>
+
+        <div id="game" class="wrapper-vertical">
+            <div id="game-header" class="wrapper-vertical">
+                <div class="wrapper-horizontal">
+                    <div id="game-first-player"></div>
+                    <div id="game-second-player" class="right-aligned"></div>
+                </div>
+                <button id="game-restart">Restart</button>
+            </div>
+            <table id="game-board">
+                <tbody id="game-board-tbody"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 

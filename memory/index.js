@@ -1,57 +1,78 @@
 'use strict';
 
-const PlayerEmojis = shuffle(Object.keys(peopleEmojis));
-
-
-
-let body = document.getElementById("game-board-tbody");
-let row = body.insertRow();
-let i = 0;
-for (const [food, c] of Object.entries(characters)) {
-    let cell = row.insertCell();
-    cell.appendChild(document.createTextNode(`${food}: ${c}`));
-    i++;
-    if (i === 6) {
-        i = 0;
-        row = body.insertRow();
+// free functions
+function shuffle(xs) {
+    // Fisher-Yates shuffle https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
+    for (let i = xs.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        let a = xs[i];
+        let b = xs[j];
+        xs[i] = b;
+        xs[j] = a;
     }
+    return xs;
 }
-
-
-const playerElements = document.querySelector(".config-player");
-
-// const boardCellClass = 'game-board-cell';
-// const playerTurnClass = 'player-turn';
-
-let configDiv = document.getElementById('config');
-let configPlayerCountDropdown = document.getElementById('config-player-count');
-let configStartButton = document.getElementById('config-start');
-
-let gameDiv = document.getElementById('game');
-let gameBoardTable = document.getElementById('game-board');
-let gameBoardTbody = document.getElementById('game-board-tbody');
-let gameRestartButton = document.getElementById('game-restart');
 
 function setShow(element, shouldShow) {
     element.style.display = shouldShow ? '' : 'none';
 }
+// end free functions
 
+
+// constants
+const FaceUpWaitSeconds = 2; // TODO use 5?
+
+const PlayerEmojis = shuffle(Object.keys(peopleEmojis));
+
+const BoardSizeTiny     = 'tiny';
+const BoardSizeSmall    = 'small';
+const BoardSizeMedium   = 'medium';
+const BoardSizeLarge    = 'large';
+
+function BoardSizeDimensions(boardSize) {
+    switch (boardSize) {
+        case BoardSizeTiny: return [2, 5];
+        case BoardSizeSmall: return [4, 4];
+        case BoardSizeMedium: return [9, 4];
+        case BoardSizeLarge: return [12, 6];
+    }
+}
 
 const ManagerStateConfig        = 'managerstate: config';
 const ManagerStateInProgress    = 'managerstate: in progress';
 const ManagerStateOver          = 'managerstate: over';
 
+const GameStateMovePart1    = 'gamestate: move part 1';
+const GameStateMovePart2    = 'gamestate: move part 2';
+const GameStateMovePart3    = 'gamestate: move part 3';
+const GameStateOver         = 'gamestate: over';
+
+const boardCellClass = 'game-board-cell';
+const playerTurnClass = 'player-turn';
+// end constants
+
+
+// dom elements
+let playerElements      = document.querySelector(".config-player");
+
+let configDiv           = document.getElementById('config');
+let configPlayerCountDropdown = document.getElementById('config-player-count');
+let configSizeDropdown  = document.getElementById('config-size');
+let configStartButton   = document.getElementById('config-start');
+
+let gameDiv             = document.getElementById('game');
+let gameScoreDiv        = document.getElementById('game-score');
+let gameBoardTable      = document.getElementById('game-board');
+let gameBoardTbody      = document.getElementById('game-board-tbody');
+let gameRestartButton   = document.getElementById('game-restart');
+// end dom elements
+
+
 class Manager {
-    constructor(playerCount, isRandom) {
+    constructor(isRandom) {
         this.isRandom = isRandom;
         this.game = null;
         this.cellRows = [];
-        gameFirstPlayer.textContent = `Player 1: ${Potato}`;
-        gameSecondPlayer.textContent = `Player 2: ${Tomato}`;
-        if (playerCount < 1 || playerCount > 4) {
-            throw new Error(`expected 1 <= player count <= 4, got ${playerCount}`);
-        }
-        this.players = PlayerEmojis.slice(0, playerCount);
         this.setState(ManagerStateConfig);
     }
 
@@ -70,7 +91,16 @@ class Manager {
             throw new Error(`unable to start: in state ${this.state}`);
         }
         let playerCount = parseInt(configPlayerCountDropdown.value, 10);
-        this.players = PlayerEmojis.slice(playerCount); // TODO get rid of this side communication channel
+        if (playerCount < 1 || playerCount > 4) {
+            throw new Error(`expected 1 <= player count <= 4, got ${playerCount}`);
+        }
+         // TODO get rid of this side communication channel?
+        this.players = PlayerEmojis.slice(0, playerCount);
+        let size = BoardSizeDimensions(configSizeDropdown.value);
+        this.width = size[0];
+        this.height = size[1];
+
+        console.log(`players: ${this.players}, ${playerCount}, ${this.players.slice(0, playerCount)}`);
         this.setState(ManagerStateInProgress);
     }
 
@@ -88,6 +118,8 @@ class Manager {
         }
         this.game = new Game(width, height, this.players, this.isRandom, (gameState) => this.didChangeGameState(gameState));
         this.setUpTable(width, height);
+        // TODO make a nice table or something?
+        gameScoreDiv.textContent = JSON.stringify(this.game.playerPairs);
     }
 
     setUpTable(xCount, yCount) {
@@ -115,6 +147,7 @@ class Manager {
                 cell.addEventListener('click', function() {
                     self.didClickCell(cell, xC, yC);
                 });
+                cell.textContent = CardBack; // TODO self.game.board[x][y];
                 modelRow.push(cell);
             }
             this.cellRows.push(modelRow);
@@ -122,45 +155,59 @@ class Manager {
     }
 
     setActivePlayer(playerIndex) {
-        console.log(`set active player to index ${playerIndex}`);
-        playerElements.forEach((e, ix) => {
-            if (ix === playerIndex) {
-                e.classList.add(playerTurnClass);
-            } else {
-                e.classList.remove(playerTurnClass);
-            }
-        })
+        console.log(`set active player to index ${playerIndex} -- TODO`);
+        // playerElements.forEach((e, ix) => {
+        //     if (ix === playerIndex) {
+        //         e.classList.add(playerTurnClass);
+        //     } else {
+        //         e.classList.remove(playerTurnClass);
+        //     }
+        // })
     }
 
-    setFaceUp(coord) {
-        throw new Error("TODO");
+    clearCardText(coord) {
+        let x = coord[0];
+        let y = coord[1];
+        this.cellRows[y][x].textContent = '';
     }
 
-    setFaceDown(coord) {
-        throw new Error("TODO");
+    setCardDirection(coord, isFaceUp) {
+        let x = coord[0];
+        let y = coord[1];
+        let text = isFaceUp ? this.game.board[x][y] : CardBack;
+        console.log(`set card direction: ${coord}, ${isFaceUp}, ${text}`);
+        this.cellRows[y][x].textContent = text;
     }
 
     didChangeGameState(gameState) {
+        console.log(`manager: didChangeGameState to ${gameState}`);
         let self = this;
         switch (gameState) {
             case GameStateMovePart1:
-                // from new game, move part3:
-                this.setActivePlayer(playerIndex);
-                // from move part3:
-                //   if found pair: remove cards from board; update pair lists TODO
-                //   if no pair: flip cards back to face down TODO
+                this.setActivePlayer(this.game.nextPlayer);
                 break;
             case GameStateMovePart2:
                 // flip first card face up
-                this.setFaceUp(this.game.faceUp[this.game.faceUp.length - 1]);
+                this.setCardDirection(this.game.faceUp[this.game.faceUp.length - 1], true);
                 break;
             case GameStateMovePart3:
                 // flip second card face up
-                this.setFaceUp(this.game.faceUp[this.game.faceUp.length - 1]);
+                this.setCardDirection(this.game.faceUp[this.game.faceUp.length - 1], true);
                 // set up timer for next state change
+                console.log(`setting timeout`);
                 setTimeout(function() {
+                    console.log(`running timeout`);
+                    for (const coord in this.faceUp) {
+                        if (self.game.pairFound) {
+                            self.clearCardText(coord);
+                            // TODO update pair lists
+                            gameScoreDiv.textContent = JSON.stringify(self.game.playerPairs);
+                        } else {
+                            self.setCardDirection(coord, false);
+                        }
+                    }
                     self.game.setState(GameStateMovePart1);
-                }, 5000);
+                }, FaceUpWaitSeconds * 1000);
                 // ignore clicks until state change -> move part1
                 break;
             case GameStateOver:
@@ -169,17 +216,17 @@ class Manager {
             default:
                 throw new Error(`invalid game state ${state}`);
         }
-        throw new Error(`TODO ${gameState}, ${playerIndex}`);
     }
 
     setState(state) {
+        console.log(`manager: set state to ${state}`);
         switch (state) {
             case ManagerStateConfig:
                 setShow(configDiv, true);
                 setShow(gameDiv, false);
                 break;
             case ManagerStateInProgress:
-                this.startNewGame(8, 8); // TODO configurable size?
+                this.startNewGame(this.width, this.height);
                 setShow(configDiv, false);
                 setShow(gameDiv, true);
                 setShow(gameRestartButton, false);
@@ -194,25 +241,10 @@ class Manager {
     }
 }
 
-// Fisher-Yates shuffle https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
-function shuffle(xs) {
-    for (let i = xs.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
-        let a = xs[i];
-        let b = xs[j];
-        xs[i] = b;
-        xs[j] = a;
-    }
-    return xs;
-}
-
-const GameStateMovePart1 = 'gamestate: move part 1';
-const GameStateMovePart2 = 'gamestate: move part 2';
-const GameStateMovePart3 = 'gamestate: move part 3';
-const GameStateOver = 'gamestate: over';
 
 class Game {
     constructor(width, height, players, isRandom, didChangeState) {
+        console.log(`new game: ${width}, ${height}, ${players}, ${isRandom}, ${didChangeState}`);
         this.didChangeState = didChangeState;
         this.playerPairs = [];
         let self = this;
@@ -227,9 +259,13 @@ class Game {
             self.playerPairs.push([]);
         })
         if (players.length < 1 || players.length > 4) {
-            throw new Error("expected 1 - 4 players, found %d", players.length);
+            throw new Error(`expected 1 - 4 players, found ${players.length}, ${players}`);
         }
         this.players = players;
+
+        if (!width || width < 1 || !height || height < 1) {
+            throw new Error(`invalid width or height: ${width}, ${height}`);
+        }
         this.width = width;
         this.height = height;
 
@@ -275,27 +311,36 @@ class Game {
             throw new Error("invalid y coordinate: " + y);
         }
         if (this.board[x][y] === null) {
-            throw new Error(`already taken: ${x, y}`);
+            throw new Error(`already taken: ${x}, ${y}`);
         }
 
         if (this.state === GameStateMovePart1) {
-            this.faceUp = [x, y];
+            this.faceUp = [[x, y]];
             this.setState(GameStateMovePart2);
         } else if (this.state === GameStateMovePart2) {
-            if (x === this.faceUp[0] && y === this.faceUp[1]) {
-                throw new Error(`invalid move, already face up: ${x, y}`);
+            if (x === this.faceUp[0][0] && y === this.faceUp[0][1]) {
+                throw new Error(`invalid move, already face up: ${x}, ${y}`);
             }
+            this.faceUp.push([x, y]);
             // found a matching pair: add it to the player's pile
-            if (this.board[x][y] === this.board[this.faceUp[0]][this.faceUp[1]]) {
+            let x1 = this.faceUp[0][0];
+            let y1 = this.faceUp[0][1];
+            if (this.board[x][y] === this.board[x1][y1]) {
                 let pairs = this.playerPairs[this.nextPlayer];
                 pairs.push([this.faceUp, [x, y]]);
                 this.playerPairs[this.nextPlayer] = pairs;
                 this.remainingPairs--;
+                this.board[x][y] = null;
+                this.board[x1][y1] = null;
                 // no more cards left: game is over
                 if (this.remainingPairs === 0) {
                     this.setState(GameStateOver);
                     return;
                 }
+                // TODO this datum is a hack -- need to get rid of side channel communication
+                this.pairFound = true;
+            } else {
+                this.pairFound = false;
             }
             this.setState(GameStateMovePart3);
             console.log(`continuing game, switching to player ${this.nextPlayer}`);
@@ -305,6 +350,7 @@ class Game {
     }
 
     setState(state) {
+        console.log(`game: set state to ${state}\n${this.toPrettyString()}`);
         switch (state) {
             case GameStateMovePart1:
                 this.faceUp = null;
@@ -322,6 +368,7 @@ class Game {
             default:
                 throw new Error(`invalid game state ${state}`);
         }
+        this.state = state;
         this.didChangeState(state);
     }
 
@@ -367,7 +414,7 @@ class Game {
 
 // // tests
 function runTests() {
-    let board = new Game(2, 2, ["X", "O"], false);
+    let board = new Game(2, 2, ["X", "O"], false, (state) => console.log(`didChangeState: ${state}`));
 
     console.log(board.toPrettyString());
     console.log(`is valid? ${board.isValid()}`);
@@ -375,20 +422,22 @@ function runTests() {
     board.flipCard(0, 0);
     board.debugDump();
 
-    board.flipCard(0, 1);
-    board.debugDump();
-
-    board.flipCard(0, 0);
-    board.debugDump();
-
     board.flipCard(1, 0);
     board.debugDump();
+
+    board.setState(GameStateMovePart1);
 
     board.flipCard(0, 1);
     board.debugDump();
 
     board.flipCard(1, 1);
     board.debugDump();
+
+    // board.flipCard(0, 1);
+    // board.debugDump();
+
+    // board.flipCard(1, 1);
+    // board.debugDump();
 
     // board.move(3, 7);
     // console.log(board.toPrettyString());
@@ -419,22 +468,24 @@ function runTests() {
     // }
 }
 
-runTests();
+if (false) { // TODO
+    runTests();
+}
 // // end tests
 
 
 
 // // DOM manipulation
-// let five = new Five();
+let manager = new Manager(2, true);
 
-// let didClickConfigStart = () => {
-//     console.log('start clicked! %s', configSizeDropdown.value);
-//     five.didClickStart();
-// };
-// configStartButton.addEventListener('click', didClickConfigStart);
+let didClickConfigStart = () => {
+    console.log('start clicked! %s', configPlayerCountDropdown.value);
+    manager.didClickStart();
+};
+configStartButton.addEventListener('click', didClickConfigStart);
 
-// let didClickGameRestart = () => {
-//     console.log('restart clicked!');
-//     five.didClickRestart();
-// };
-// gameRestartButton.addEventListener('click', didClickGameRestart);
+let didClickGameRestart = () => {
+    console.log('restart clicked!');
+    manager.didClickRestart();
+};
+gameRestartButton.addEventListener('click', didClickGameRestart);
