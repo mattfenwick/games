@@ -8,40 +8,38 @@
 
 <body>
 
-<div class="wrapper-vertical">
+<div class="wrapper-horizontal">
     <div id="config" class="wrapper-vertical">
-        <select id="config-player-count">
-            <option value="1">Players: one</option>
-            <option value="2" selected>Players: two</option>
-            <option value="3">Players: three</option>
-            <option value="4">Players: four</option>
-        </select>
-        <select id="config-size">
-            <option value="tiny">Size: tiny</option>
-            <option value="small" selected>Size: small</option>
-            <option value="medium">Size: medium</option>
-            <option value="large">Size: large</option>
-            <option value="xl">Size: extra large</option>
-        </select>
-        <button id="config-start">Start</button>
-    </div>
+        <div id="config-setup" class="wrapper-vertical">
+            <select id="config-player-count">
+                <option value="1">Players: one</option>
+                <option value="2" selected>Players: two</option>
+                <option value="3">Players: three</option>
+                <option value="4">Players: four</option>
+            </select>
+            <select id="config-size">
+                <option value="tiny">Size: tiny</option>
+                <option value="small" selected>Size: small</option>
+                <option value="medium">Size: medium</option>
+                <option value="large">Size: large</option>
+                <option value="xl">Size: extra large</option>
+            </select>
+            <button id="config-start">Start</button>
+        </div>
 
-    <div id="game" class="wrapper-horizontal">
         <div id="game-score" class="wrapper-vertical">
             <table id="game-player">
                 <tbody id="game-player-tbody"></tbody>
             </table>
+            <div id="game-turns"></div>
         </div>
 
-        <div id="game" class="wrapper-vertical">
-            <div id="game-header" class="wrapper-vertical">
-                <button id="game-restart">Restart</button>
-            </div>
-            <table id="game-board">
-                <tbody id="game-board-tbody"></tbody>
-            </table>
-        </div>
+        <button id="game-restart">Restart</button>
     </div>
+
+    <table id="game-board">
+        <tbody id="game-board-tbody"></tbody>
+    </table>
 </div>
 
 

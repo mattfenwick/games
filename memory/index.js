@@ -43,10 +43,10 @@ function BoardSizeDimensions(boardSize) {
 
 function FaceUpWaitMilliseconds(boardSize) {
     switch (boardSize) {
-        case BoardSizeTiny: return 3000;
-        case BoardSizeSmall: return 2500;
-        case BoardSizeMedium: return 2000;
-        case BoardSizeLarge: return 1500;
+        case BoardSizeTiny: return 2000;
+        case BoardSizeSmall: return 1750;
+        case BoardSizeMedium: return 1500;
+        case BoardSizeLarge: return 1250;
         case BoardSizeXL: return 1000;
         default: throw new Error(`invalid board size ${boardSize}`);
     }
@@ -69,12 +69,11 @@ const activePlayerClass = 'game-active-player';
 // dom elements
 let playerElements      = document.querySelector(".config-player");
 
-let configDiv           = document.getElementById('config');
-let configPlayerCountDropdown = document.getElementById('config-player-count');
-let configSizeDropdown  = document.getElementById('config-size');
-let configStartButton   = document.getElementById('config-start');
+let configSetupDiv          = document.getElementById('config-setup');
+let configPlayersDropdown   = document.getElementById('config-player-count');
+let configSizeDropdown      = document.getElementById('config-size');
+let configStartButton       = document.getElementById('config-start');
 
-let gameDiv             = document.getElementById('game');
 let gameScoreDiv        = document.getElementById('game-score');
 let gameBoardTable      = document.getElementById('game-board');
 let gameBoardTbody      = document.getElementById('game-board-tbody');
@@ -106,7 +105,7 @@ class Manager {
         if (this.state !== ManagerStateConfig) {
             throw new Error(`unable to start: in state ${this.state}`);
         }
-        let playerCount = parseInt(configPlayerCountDropdown.value, 10);
+        let playerCount = parseInt(configPlayersDropdown.value, 10);
         if (playerCount < 1 || playerCount > 4) {
             throw new Error(`expected 1 <= player count <= 4, got ${playerCount}`);
         }
@@ -188,6 +187,10 @@ class Manager {
         })
     }
 
+    refreshTurnCount(count) {
+        document.getElementById('game-turns').textContent = `Turns: ${count}`;
+    }
+
     updateCardText(cell) {
         console.log(`${cell}, ${cell.x}, ${cell.y}, ${this.cellRows.length}, ${this.game.board.length}`);
         this.cellRows[cell.y][cell.x].textContent = this.game.board[cell.x][cell.y].domTextContent;
@@ -197,6 +200,7 @@ class Manager {
         console.log(`manager: didChangeGameState to ${JSON.stringify(event)}`);
         event.updateCells.forEach(coord => this.updateCardText(coord));
         this.refreshScoreArea(this.game.getPlayerScores());
+        this.refreshTurnCount(this.game.turns.length);
         switch (event.state) {
             case GameStateMovePart1:
                 break;
@@ -225,14 +229,17 @@ class Manager {
         console.log(`manager: set state to ${state}`);
         switch (state) {
             case ManagerStateConfig:
-                setShow(configDiv, true);
-                setShow(gameDiv, false);
+                setShow(configSetupDiv, true);
+                setShow(gameBoardTable, false);
+                setShow(gameScoreDiv, false);
+                setShow(gameRestartButton, false);
+                this.refreshTurnCount(0);
                 break;
             case ManagerStateInProgress:
                 this.startNewGame(this.width, this.height);
-                setShow(configDiv, false);
-                setShow(gameDiv, true);
-                setShow(gameRestartButton, false);
+                setShow(configSetupDiv, false);
+                setShow(gameBoardTable, true);
+                setShow(gameScoreDiv, true);
                 break;
             case ManagerStateOver:
                 setShow(gameRestartButton, true);
@@ -336,6 +343,7 @@ class Game {
         // TODO how to handle these ?  perf optimization ?
         this.faceUp = null;
         this.remainingPairs = half;
+        this.turns = [];
     }
 
     flipCard(x, y) {
@@ -373,6 +381,7 @@ class Game {
         let fst = faceUp[0];
         let snd = faceUp[1];
 
+        this.turns.push({player: this.nextPlayer, cells: this.faceUp, foundPair: fst.char === snd.char});
         let foundPair = null;
 
         // found a matching pair: add it to the player's pile
@@ -526,7 +535,7 @@ if (false) { // TODO
 let manager = new Manager(2, true);
 
 let didClickConfigStart = () => {
-    console.log('start clicked! %s', configPlayerCountDropdown.value);
+    console.log('start clicked! %s', configPlayersDropdown.value);
     manager.didClickStart();
 };
 configStartButton.addEventListener('click', didClickConfigStart);
