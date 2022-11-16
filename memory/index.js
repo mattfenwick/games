@@ -20,8 +20,6 @@ function setShow(element, shouldShow) {
 
 
 // constants
-const FaceUpWaitSeconds = 2; // TODO use 5?
-
 const PlayerEmojis = shuffle(Object.values(PeopleEmojis));
 
 const BoardSizeTiny     = 'tiny';
@@ -162,7 +160,7 @@ class Manager {
                 cell.addEventListener('click', function() {
                     self.didClickCell(cell, xC, yC);
                 });
-                cell.textContent = CardBack; // TODO self.game.board[x][y];
+                cell.textContent = CardBack;
                 modelRow.push(cell);
             }
             this.cellRows.push(modelRow);
@@ -191,9 +189,11 @@ class Manager {
         document.getElementById('game-turns').textContent = `Turns: ${count}`;
     }
 
-    updateCardText(cell) {
-        console.log(`${cell}, ${cell.x}, ${cell.y}, ${this.cellRows.length}, ${this.game.board.length}`);
-        this.cellRows[cell.y][cell.x].textContent = this.game.board[cell.x][cell.y].domTextContent;
+    updateCardText(cellModel) {
+        let x = cellModel.x;
+        let y = cellModel.y;
+        console.log(`${cellModel}, ${x}, ${y}, ${this.cellRows.length}, ${this.game.board.length}`);
+        this.cellRows[y][x].textContent = this.game.board[x][y].domTextContent;
     }
 
     didChangeGameState(event) {
@@ -201,6 +201,7 @@ class Manager {
         event.updateCells.forEach(coord => this.updateCardText(coord));
         this.refreshScoreArea(this.game.getPlayerScores());
         this.refreshTurnCount(this.game.turns.length);
+        let self = this;
         switch (event.state) {
             case GameStateMovePart1:
                 break;
@@ -208,7 +209,6 @@ class Manager {
                 break;
             case GameStateMovePart3:
                 console.log(`setting timeout`);
-                let self = this;
                 setTimeout(function() {
                     console.log(`running timeout`);
                     self.game.finishTurn();
@@ -216,8 +216,6 @@ class Manager {
                 // ignore clicks until state change -> move part1
                 break;
             case GameStateOver:
-                // TODO
-                //   update card text -- all?  or just the active 2?
                 this.setState(ManagerStateOver);
                 break;
             default:
@@ -254,6 +252,7 @@ class Manager {
 const GameCellStateFaceDown = 'GameCellStateFaceDown';
 const GameCellStateFaceUp   = 'GameCellStateFaceUp';
 const GameCellStateCaptured = 'GameCellStateCaptured';
+const GameCellStateOver     = 'GameCellStateOver';
 
 class GameCell {
     constructor(x, y, char) {
@@ -278,18 +277,27 @@ class GameCell {
         this.state = GameCellStateFaceDown;
     }
 
-    capture() {
+    capture(owner) {
         if (this.state !== GameCellStateFaceUp) {
             throw new Error(`unable to capture: in state ${this.state}`);
         }
         this.state = GameCellStateCaptured;
+        this.owner = owner;
+    }
+
+    gameOver() {
+        if (this.state !== GameCellStateCaptured) {
+            throw new Error(`unable to transition to game over: in state ${this.state}`);
+        }
+        this.state = GameCellStateOver;
     }
 
     get domTextContent() {
         switch (this.state) {
             case GameCellStateFaceDown: return CardBack;
             case GameCellStateFaceUp: return this.char;
-            case GameCellStateCaptured: return ''; // TODO owner?  maybe when game is finished?
+            case GameCellStateCaptured: return '';
+            case GameCellStateOver: return this.owner;
             default: throw new Error(`invalid GameCellState ${this.state}`);
         }
     }
@@ -297,7 +305,7 @@ class GameCell {
 
 class Game {
     constructor(width, height, players, isRandom, didChangeState) {
-        console.log(`new game: ${width}, ${height}, ${players}, ${isRandom}, ${didChangeState}`);
+        console.log(`new game: ${width}, ${height}; ${players}; ${isRandom}; ${didChangeState}`);
         this.didChangeState = didChangeState;
         this.playerPairs = players.map(_ => []);
         if (players.length < 1 || players.length > 4) {
@@ -387,13 +395,15 @@ class Game {
         // found a matching pair: add it to the player's pile
         if (fst.char === snd.char) {
             foundPair = {player: this.nextPlayer};
-            fst.capture();
-            snd.capture();
+            fst.capture(this.players[this.nextPlayer]);
+            snd.capture(this.players[this.nextPlayer]);
             this.playerPairs[this.nextPlayer].push(faceUp);
             this.remainingPairs--;
             // no more cards left: game is over
             if (this.remainingPairs === 0) {
-                this.setState({state: GameStateOver, updateCells: this.faceUp, foundPair: foundPair, updatePlayerTurn: null});
+                let cells = this.board.flatMap(row => row);
+                cells.forEach(c => c.gameOver());
+                this.setState({state: GameStateOver, updateCells: cells, foundPair: foundPair, updatePlayerTurn: null});
                 return;
             }
         } else {
@@ -532,7 +542,7 @@ if (false) { // TODO
 
 
 // // DOM manipulation
-let manager = new Manager(2, true);
+let manager = new Manager(true);
 
 let didClickConfigStart = () => {
     console.log('start clicked! %s', configPlayersDropdown.value);
