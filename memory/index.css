@@ -18,12 +18,19 @@
     border-collapse: separate;
 }
 
-#game-board td {
+.game-board-cell {
     text-align: center;
     border: 3px dashed lightblue;
     font-size: 55px;
     width: 80px;
     height: 80px;
+    margin: 0px;
+    padding: 0px;
+}
+
+.game-board-header {
+    text-align: center;
+    font-size: 25px;
     margin: 0px;
     padding: 0px;
 }

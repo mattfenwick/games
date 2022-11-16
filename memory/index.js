@@ -60,6 +60,7 @@ const GameStateMovePart3    = 'gamestate: move part 3';
 const GameStateOver         = 'gamestate: over';
 
 const boardCellClass    = 'game-board-cell';
+const boardHeaderClass  = 'game-board-header';
 const activePlayerClass = 'game-active-player';
 // end constants
 
@@ -146,10 +147,27 @@ class Manager {
         gameBoardTbody.textContent = '';
         this.cellRows = [];
 
+        // special row of cells showing x half of coordinate; doesn't need to be updated
+        //   so no need to add to model
+        let headerRow = gameBoardTbody.insertRow();
+        for (let x = 0; x <= xCount; x++) {
+            let headerRowCell = headerRow.insertCell();
+            if (x === 0) { continue; }
+            headerRowCell.textContent = x - 1;
+            headerRowCell.classList.add(boardHeaderClass);
+        }
+
         let self = this;
         for (let y = 0; y < yCount; y++) {
             let domRow = gameBoardTbody.insertRow();
             let modelRow = [];
+            
+            // special cell showing y half of coordinate; doesn't need to be updated
+            //   so no need to add to model
+            let headerColumnCell = domRow.insertCell();
+            headerColumnCell.textContent = y;
+            headerColumnCell.classList.add(boardHeaderClass);
+
             for (let x = 0; x < xCount; x++) {
                 let xC = x;
                 let yC = y;
