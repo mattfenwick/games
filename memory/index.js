@@ -428,10 +428,11 @@ class Game {
     }
 
     getPlayerScores() {
+        let maxScore = Math.max(...this.players.map((p, ix) => this.playerPairs[ix].length ));
         return this.players.map((p, ix) => {
             return {
                 'symbol': p,
-                'isActive': ix === this.nextPlayer,
+                'isActive': (this.state !== GameStateOver) ? ix === this.nextPlayer : (this.playerPairs[ix].length === maxScore),
                 'score': this.playerPairs[ix].length,
             };
         });
