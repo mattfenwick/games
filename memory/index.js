@@ -105,8 +105,8 @@ class Manager {
             throw new Error(`unable to start: in state ${this.state}`);
         }
         let playerCount = parseInt(configPlayersDropdown.value, 10);
-        if (playerCount < 1 || playerCount > 4) {
-            throw new Error(`expected 1 <= player count <= 4, got ${playerCount}`);
+        if (playerCount < 1 || playerCount > 6) {
+            throw new Error(`expected 1 <= player count <= 6, got ${playerCount}`);
         }
          // TODO get rid of this side communication channel?
         this.players = PlayerEmojis.slice(0, playerCount);
@@ -326,9 +326,6 @@ class Game {
         console.log(`new game: ${width}, ${height}; ${players}; ${isRandom}; ${didChangeState}`);
         this.didChangeState = didChangeState;
         this.playerPairs = players.map(_ => []);
-        if (players.length < 1 || players.length > 4) {
-            throw new Error(`expected 1 - 4 players, found ${players.length}, ${players}`);
-        }
         this.players = players;
 
         if (!width || width < 1 || !height || height < 1) {
