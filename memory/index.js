@@ -436,18 +436,20 @@ class Game {
                 return;
             }
         } else {
+            // only switch players if guess is wrong
+            this.nextPlayer++;
+            if (this.nextPlayer >= this.players.length) {
+                this.nextPlayer = 0;
+            }
+
             fst.flipFaceDown();
             snd.flipFaceDown();
         }
 
-        this.nextPlayer++;
-        if (this.nextPlayer >= this.players.length) {
-            this.nextPlayer = 0;
-        }
         this.faceUp = null;
 
         this.setState({state: GameStateMovePart1, updateCells: faceUp, foundPair: foundPair, updatePlayerTurn: this.nextPlayer});
-        console.log(`continuing game, switching to player ${this.nextPlayer}`);
+        console.log(`continuing game, player ${this.nextPlayer}'s turn`);
     }
 
     setState(event) {
