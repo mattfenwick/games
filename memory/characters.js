@@ -2,14 +2,14 @@
 
 
 const PeopleEmojis = {
-    elf         : '\uD83E\uDDDD',
-    manDancing  : '\uD83D\uDD7A',
-    manGuard    : '\uD83D\uDC82',
-    ninja       : '\uD83E\uDD77',
-    troll       : '\uD83E\uDDCC',
-    womanDancing: '\uD83D\uDC83',
-    vampire     : '\uD83E\uDDDB',
-    zombie      : '\uD83E\uDDDF',
+    elf         : ['\uD83E\uDDDD', 'lightcyan'  ],
+    manDancing  : ['\uD83D\uDD7A', 'lightblue'  ],
+    manGuard    : ['\uD83D\uDC82', 'lightgray'  ],
+    ninja       : ['\uD83E\uDD77', 'lightgreen' ],
+    troll       : ['\uD83E\uDDCC', 'lightyellow'],
+    womanDancing: ['\uD83D\uDC83', 'lightpink'  ],
+    vampire     : ['\uD83E\uDDDB', 'lightcoral' ],
+    zombie      : ['\uD83E\uDDDF', 'lightseagreen'],
 }
 
 

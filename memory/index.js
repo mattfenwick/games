@@ -20,7 +20,7 @@ function setShow(element, shouldShow) {
 
 
 // constants
-const PlayerEmojis = shuffle(Object.values(PeopleEmojis));
+const PlayerEmojis = shuffle(Object.keys(PeopleEmojis));
 
 const BoardSizeTiny     = 'tiny';
 const BoardSizeSmall    = 'small';
@@ -196,9 +196,10 @@ class Manager {
 
         players.forEach(function(p) {
             let row = gamePlayerTbody.insertRow();
-            if (p.isActive) {
+            if (p.hasBorder) {
                 row.classList.add(activePlayerClass);
             }
+            row.style.background = p.backgroundColor;
             row.insertCell().textContent = p.symbol;
             row.insertCell().textContent = p.score;
             self.scoreRows.push(row);
@@ -214,6 +215,7 @@ class Manager {
         let y = cellModel.y;
         console.log(`${cellModel}, ${x}, ${y}, ${this.cellRows.length}, ${this.game.board.length}`);
         this.cellRows[y][x].textContent = this.game.board[x][y].domTextContent;
+        this.cellRows[y][x].style.background = this.game.board[x][y].backgroundColor;
     }
 
     didChangeGameState(event) {
@@ -312,12 +314,22 @@ class GameCell {
         this.state = GameCellStateOver;
     }
 
+    get backgroundColor() {
+        switch (this.state) {
+            case GameCellStateFaceDown: return '';
+            case GameCellStateFaceUp: return '';
+            case GameCellStateCaptured: return PeopleEmojis[this.owner][1];
+            case GameCellStateOver: return PeopleEmojis[this.owner][1];
+            default: throw new Error(`invalid GameCellState ${this.state}`);
+        }
+    }
+
     get domTextContent() {
         switch (this.state) {
             case GameCellStateFaceDown: return CardBack;
             case GameCellStateFaceUp: return this.char;
             case GameCellStateCaptured: return '';
-            case GameCellStateOver: return this.owner;
+            case GameCellStateOver: return this.char;
             default: throw new Error(`invalid GameCellState ${this.state}`);
         }
     }
@@ -448,8 +460,9 @@ class Game {
         let maxScore = Math.max(...this.players.map((p, ix) => this.playerPairs[ix].length ));
         return this.players.map((p, ix) => {
             return {
-                'symbol': p,
-                'isActive': (this.state !== GameStateOver) ? ix === this.nextPlayer : (this.playerPairs[ix].length === maxScore),
+                'symbol': PeopleEmojis[p][0],
+                'backgroundColor': PeopleEmojis[p][1],
+                'hasBorder': (this.state !== GameStateOver) ? ix === this.nextPlayer : (this.playerPairs[ix].length === maxScore),
                 'score': this.playerPairs[ix].length,
             };
         });

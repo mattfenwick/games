@@ -20,7 +20,7 @@
 
 .game-board-cell {
     text-align: center;
-    border: 3px dashed lightblue;
+    border: 3px dashed black;
     font-size: 55px;
     width: 80px;
     height: 80px;
@@ -35,14 +35,16 @@
     padding: 0px;
 }
 
+#game-score {
+    border-collapse: separate;
+}
+
 #game-score td {
     text-align: center;
     font-size: 60px;
     padding: 10px;
 }
 
-.game-active-player {
-    font-size: x-large;
-    background-color: red;
-    border: 2px double;
+.game-active-player td {
+    border: 5px black solid;
 }
