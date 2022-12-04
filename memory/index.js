@@ -41,10 +41,10 @@ function BoardSizeDimensions(boardSize) {
 
 function FaceUpWaitMilliseconds(boardSize) {
     switch (boardSize) {
-        case BoardSizeTiny: return 2000;
-        case BoardSizeSmall: return 1750;
-        case BoardSizeMedium: return 1500;
-        case BoardSizeLarge: return 1250;
+        case BoardSizeTiny: return 1000;
+        case BoardSizeSmall: return 1000;
+        case BoardSizeMedium: return 1000;
+        case BoardSizeLarge: return 100;
         case BoardSizeXL: return 1000;
         default: throw new Error(`invalid board size ${boardSize}`);
     }
