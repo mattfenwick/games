@@ -22,6 +22,8 @@ function setShow(element, shouldShow) {
 // constants
 const PlayerEmojis = shuffle(Object.keys(PeopleEmojis));
 
+const FaceUpWaitMilliseconds = 1000;
+
 const BoardSizeTiny     = 'tiny';
 const BoardSizeSmall    = 'small';
 const BoardSizeMedium   = 'medium';
@@ -35,17 +37,6 @@ function BoardSizeDimensions(boardSize) {
         case BoardSizeMedium: return [9, 4];
         case BoardSizeLarge: return [12, 6];
         case BoardSizeXL: return [14, 8];
-        default: throw new Error(`invalid board size ${boardSize}`);
-    }
-}
-
-function FaceUpWaitMilliseconds(boardSize) {
-    switch (boardSize) {
-        case BoardSizeTiny: return 1000;
-        case BoardSizeSmall: return 1000;
-        case BoardSizeMedium: return 1000;
-        case BoardSizeLarge: return 100;
-        case BoardSizeXL: return 1000;
         default: throw new Error(`invalid board size ${boardSize}`);
     }
 }
@@ -114,7 +105,7 @@ class Manager {
         let size = BoardSizeDimensions(configSizeDropdown.value);
         this.width = size[0];
         this.height = size[1];
-        this.faceUpWaitMilliseconds = FaceUpWaitMilliseconds(configSizeDropdown.value);
+        this.faceUpWaitMilliseconds = FaceUpWaitMilliseconds;
         this.cardCharacters = GetCharacters(configThemeDropdown.value);
 
         console.log(`players: ${this.players}, ${playerCount}, ${this.players.slice(0, playerCount)}`);
