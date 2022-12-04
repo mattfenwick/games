@@ -22,6 +22,7 @@
     text-align: center;
     border: 3px dashed black;
     font-size: 55px;
+    min-width: 80px;
     width: 80px;
     height: 80px;
     margin: 0px;
