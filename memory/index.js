@@ -71,6 +71,7 @@ let playerElements      = document.querySelector(".config-player");
 let configSetupDiv          = document.getElementById('config-setup');
 let configPlayersDropdown   = document.getElementById('config-player-count');
 let configSizeDropdown      = document.getElementById('config-size');
+let configThemeDropdown     = document.getElementById('config-theme');
 let configStartButton       = document.getElementById('config-start');
 
 let gameScoreDiv        = document.getElementById('game-score');
@@ -114,6 +115,7 @@ class Manager {
         this.width = size[0];
         this.height = size[1];
         this.faceUpWaitMilliseconds = FaceUpWaitMilliseconds(configSizeDropdown.value);
+        this.cardCharacters = GetCharacters(configThemeDropdown.value);
 
         console.log(`players: ${this.players}, ${playerCount}, ${this.players.slice(0, playerCount)}`);
         this.setState(ManagerStateInProgress);
@@ -131,7 +133,7 @@ class Manager {
         if (this.state !== ManagerStateConfig) {
             throw new Error(`unable to start game from state ${this.state}`);
         }
-        this.game = new Game(width, height, this.players, this.isRandom, (gameState) => this.didChangeGameState(gameState));
+        this.game = new Game(width, height, this.players, this.isRandom, this.cardCharacters, (gameState) => this.didChangeGameState(gameState));
         this.setUpTable(width, height);
         this.refreshScoreArea(this.game.getPlayerScores());
     }
@@ -322,7 +324,7 @@ class GameCell {
 }
 
 class Game {
-    constructor(width, height, players, isRandom, didChangeState) {
+    constructor(width, height, players, isRandom, cardCharacters, didChangeState) {
         console.log(`new game: ${width}, ${height}; ${players}; ${isRandom}; ${didChangeState}`);
         this.didChangeState = didChangeState;
         this.playerPairs = players.map(_ => []);
@@ -342,7 +344,7 @@ class Game {
             throw new Error(`invalid size: must be even, got ${size}`);
         }
         let half = size / 2;
-        let availableChars = Object.values(FoodEmojis);
+        let availableChars = Object.values(cardCharacters);
         if (isRandom) {
             availableChars = shuffle(availableChars);
         }
@@ -496,7 +498,7 @@ class Game {
 
 // // tests
 function runTests() {
-    let board = new Game(2, 2, ["X", "O"], false, (state) => console.log(`didChangeState: ${state}`));
+    let board = new Game(2, 2, ["X", "O"], false, FoodEmojis, (state) => console.log(`didChangeState: ${state}`));
 
     console.log(board.toPrettyString());
     console.log(`is valid? ${board.isValid()}`);
@@ -550,8 +552,18 @@ function runTests() {
     // }
 }
 
+function printCharacters() {
+    let pre = document.createElement("pre");
+    configSetupDiv.appendChild(pre);
+    for (const [key, value] of Object.entries(GetCharacters(MixedTheme))) {
+        console.log(`${key}: ${value}`);
+        pre.textContent += `${key}: ${value}\n`;
+    }
+}
+
 if (false) { // TODO
-    runTests();
+    // runTests();
+    printCharacters();
 }
 // // end tests
 

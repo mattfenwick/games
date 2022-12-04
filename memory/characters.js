@@ -16,6 +16,35 @@ const PeopleEmojis = {
 const CardBack = '\uD83C\uDCA0';
 
 
+const FoodTheme     = 'food';
+const AnimalsTheme  = 'animals';
+const MixedTheme    = 'mixed';
+
+
+function GetCharacters(theme) {
+    switch (theme) {
+        case FoodTheme: return FoodEmojis;
+        case AnimalsTheme: return AnimalEmojis;
+        case MixedTheme: return CombineMaps([FoodEmojis, AnimalEmojis]);
+        default: throw new Error(`invalid theme ${theme}`);
+    }
+}
+
+
+function CombineMaps(maps) {
+    var out = {};
+    maps.forEach(function(m) {
+        for (const [key, value] of Object.entries(m)) {
+            if (key in out) {
+                throw new Error(`duplicate key: ${key}, values ${value}, ${out[key]}`);
+            }
+            out[key] = value;
+        }
+    })
+    return out;
+}
+
+
 const FoodEmojis = {
     'blueberries'   : '\uD83E\uDED0',
     'bell pepper'   : '\uD83E\uDED1',
@@ -98,4 +127,123 @@ const FoodEmojis = {
 
     'honey pot'         : '\uD83C\uDF6F',
     'shortcake'         : '\uD83C\uDF70',
+};
+
+const AnimalEmojis = {
+    'rat'           : '\uD83D\uDC00',
+    'mouse'         : '\uD83D\uDC01',
+    'ox'            : '\uD83D\uDC02',
+    'water buffalo' : '\uD83D\uDC03',
+    'cow'           : '\uD83D\uDC04',
+    'tiger'         : '\uD83D\uDC05',
+    'leopard'       : '\uD83D\uDC06',
+    'rabbit'        : '\uD83D\uDC07',
+    'cat'           : '\uD83D\uDC08',
+    'dragon'        : '\uD83D\uDC09',
+    'crocodile'     : '\uD83D\uDC0A',
+    'whale'         : '\uD83D\uDC0B',
+    'snail'         : '\uD83D\uDC0C',
+    'snake'         : '\uD83D\uDC0D',
+    'horse'         : '\uD83D\uDC0E',
+    'ram'           : '\uD83D\uDC0F',
+
+    'goat'          : '\uD83D\uDC10',
+    'sheep'         : '\uD83D\uDC11',
+    'monkey'        : '\uD83D\uDC12',
+    'rooster'       : '\uD83D\uDC13',
+    // 'chicken head'  : '\uD83D\uDC14',
+    'dog'           : '\uD83D\uDC15',
+    'pig'           : '\uD83D\uDC16',
+    'boar'          : '\uD83D\uDC17',
+    'elephant'      : '\uD83D\uDC18',
+    'octopus'       : '\uD83D\uDC19',
+    // 'shell'         : '\uD83D\uDC1A',
+    'bug'           : '\uD83D\uDC1B',
+    'ant'           : '\uD83D\uDC1C',
+    'honeybee'      : '\uD83D\uDC1D',
+    'lady beetle'   : '\uD83D\uDC1E',
+    'fish'          : '\uD83D\uDC1F',
+
+    'tropical fish'             : '\uD83D\uDC20',
+    'blowfish'                  : '\uD83D\uDC21',
+    'turtle'                    : '\uD83D\uDC22',
+    // 'hatching chick'            : '\uD83D\uDC23',
+    // 'baby chick face'           : '\uD83D\uDC24',
+    'front facing baby chick'   : '\uD83D\uDC25',
+    // 'bird face'                 : '\uD83D\uDC26',
+    // 'penguin face'              : '\uD83D\uDC27',
+    // 'koala face'                : '\uD83D\uDC28',
+    'poodle'                    : '\uD83D\uDC29',
+    'dromedary camel'           : '\uD83D\uDC2A',
+    'bactrian camel'            : '\uD83D\uDC2B',
+    'dolphin'                   : '\uD83D\uDC2C',
+    // 'mouse face'                : '\uD83D\uDC2D',
+    // 'cow face'                  : '\uD83D\uDC2E',
+    // 'tiger face'                : '\uD83D\uDC2F',
+
+    // 'rabbit face'   : '\uD83D\uDC30',
+    // 'cat face'      : '\uD83D\uDC31',
+    // 'dragon face'   : '\uD83D\uDC32',
+    'spouting whale': '\uD83D\uDC33',
+    'horse face'    : '\uD83D\uDC34',
+    // 'monkey face'   : '\uD83D\uDC35',
+    // 'dog face'      : '\uD83D\uDC36',
+    // 'pig face'      : '\uD83D\uDC37',
+    'frog face'     : '\uD83D\uDC38',
+    // 'hamster face'  : '\uD83D\uDC39',
+    'wolf face'     : '\uD83D\uDC3A',
+    'bear face'     : '\uD83D\uDC3B',
+    'panda face'    : '\uD83D\uDC3C',
+    // 'pig nose'      : '\uD83D\uDC3D',
+    // 'paw prints'    : '\uD83D\uDC3E',
+    'chipmunk'      : '\uD83D\uDC3F',
+
+    'crab'          : '\uD83E\uDD80',
+    'lion face'     : '\uD83E\uDD81',
+    'scorpion'      : '\uD83E\uDD82',
+    'turkey'        : '\uD83E\uDD83',
+    'unicorn face'  : '\uD83E\uDD84',
+    'eagle'         : '\uD83E\uDD85',
+    'duck'          : '\uD83E\uDD86',
+    'bat'           : '\uD83E\uDD87',
+    'shark'         : '\uD83E\uDD88',
+    'owl'           : '\uD83E\uDD89',
+    'fox face'      : '\uD83E\uDD8A',
+    'butterfly'     : '\uD83E\uDD8B',
+    'deer'          : '\uD83E\uDD8C',
+    'gorilla'       : '\uD83E\uDD8D',
+    'lizard'        : '\uD83E\uDD8E',
+    'rhinoceros'    : '\uD83E\uDD8F',
+
+    'shrimp'        : '\uD83E\uDD90',
+    'squid'         : '\uD83E\uDD91',
+    'giraffe'       : '\uD83E\uDD92',
+    'zebra'         : '\uD83E\uDD93',
+    'hedgehog'      : '\uD83E\uDD94',
+    'sauropod'      : '\uD83E\uDD95',
+    't rex'         : '\uD83E\uDD96',
+    'cricket'       : '\uD83E\uDD97',
+    'kangaroo'      : '\uD83E\uDD98',
+    'llama'         : '\uD83E\uDD99',
+    'peacock'       : '\uD83E\uDD9A',
+    'hippopotamus'  : '\uD83E\uDD9B',
+    'parrot'        : '\uD83E\uDD9C',
+    'raccoon'       : '\uD83E\uDD9D',
+    'lobster'       : '\uD83E\uDD9E',
+    // 'mosquito'      : '\uD83E\uDD9F',
+
+    // 'microbe'   : '\uD83E\uDDA0',
+    'badger'    : '\uD83E\uDDA1',
+    'swan'      : '\uD83E\uDDA2',
+    'mammoth'   : '\uD83E\uDDA3',
+    'dodo'      : '\uD83E\uDDA4',
+    'sloth'     : '\uD83E\uDDA5',
+    'otter'     : '\uD83E\uDDA6',
+    'orangutan' : '\uD83E\uDDA7',
+    'skunk'     : '\uD83E\uDDA8',
+    'flamino'   : '\uD83E\uDDA9',
+    'oyster'    : '\uD83E\uDDAA',
+    'beaver'    : '\uD83E\uDDAB',
+    'bison'     : '\uD83E\uDDAC',
+    'seal'      : '\uD83E\uDDAD',
 };
