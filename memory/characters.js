@@ -10,9 +10,11 @@ const PeopleEmojis = {
     womanDancing: ['\uD83D\uDC83', 'lightpink'  ],
     vampire     : ['\uD83E\uDDDB', 'lightcoral' ],
     zombie      : ['\uD83E\uDDDF', 'lightseagreen'],
-    superhero   : ['\uD83E\uDDB8', 'lightorange'],
-    santaclaus  : ['\uD83C\uDF85\uD83C\uDFFB', 'white'],
-    snowman     : ['\u26C4', 'darkblue'],
+    superhero   : ['\uD83E\uDDB8', 'whitesmoke'],
+    santaclaus  : ['\uD83C\uDF85\uD83C\uDFFB', 'yellowgreen'],
+    snowman     : ['\u26C4', 'ivory'],
+    princess	: ['\uD83D\uDC78', 'lavenderblush'],
+    prince	: ['\uD83E\uDD34\uD83C\uDFFB', 'orange'],
 }
 
 
@@ -21,6 +23,7 @@ const CardBack = '\uD83C\uDCA0';
 
 const FoodTheme     = 'food';
 const AnimalsTheme  = 'animals';
+const FlagTheme	= 'Flags';
 const MixedTheme    = 'mixed';
 
 
@@ -28,7 +31,8 @@ function GetCharacters(theme) {
     switch (theme) {
         case FoodTheme: return FoodEmojis;
         case AnimalsTheme: return AnimalEmojis;
-        case MixedTheme: return CombineMaps([FoodEmojis, AnimalEmojis]);
+        case FlagTheme: return FlagEmojis;
+        case MixedTheme: return CombineMaps([FoodEmojis, AnimalEmojis, FlagEmojis]);
         default: throw new Error(`invalid theme ${theme}`);
     }
 }
@@ -282,4 +286,50 @@ const AnimalEmojis = {
     'beaver'    : '\uD83E\uDDAB',
     'bison'     : '\uD83E\uDDAC',
     'seal'      : '\uD83E\uDDAD',
+};
+
+const FlagEmojis = {
+    'France' 	: '\uD83C\uDDEB\uD83C\uDDF7',
+    'USA'	: '\uD83C\uDDFA\uD83C\uDDF8',
+    'Germany'	: '\uD83C\uDDE9\uD83C\uDDEA',
+    'UK'	: '\uD83C\uDDEC\uD83C\uDDE7',
+    'Spain'	: '\uD83C\uDDEA\uD83C\uDDF8',
+    'Portugal'	: '\uD83C\uDDF5\uD83C\uDDF9',
+    'Argentina'	: '\uD83C\uDDE6\uD83C\uDDF7',
+    'Italy'	: '\uD83C\uDDEE\uD83C\uDDF9',
+    'Serbia'	: '\uD83C\uDDF7\uD83C\uDDF8',
+    'Poland'	: '\uD83C\uDDF5\uD83C\uDDF1',
+    'Russia'	: '\uD83C\uDDF7\uD83C\uDDFA',
+    'Finland'	: '\uD83C\uDDEB\uD83C\uDDEE',
+    'Norway'	: '\uD83C\uDDF3\uD83C\uDDF4',
+    'Sweden'	: '\uD83C\uDDF3\uD83C\uDDF4',
+    'Canada'	: '\uD83C\uDDE8\uD83C\uDDE6',
+    'Japan'	: '\uD83C\uDDEF\uD83C\uDDF5',
+    'China'	: '\uD83C\uDDE8\uD83C\uDDF3',
+    'Croatia'	: '\uD83C\uDDED\uD83C\uDDF7',
+    'Austria'	: '\uD83C\uDDE6\uD83C\uDDF9',
+    'Mexico'	: '\uD83C\uDDF2\uD83C\uDDFD',
+    'Venezuela'	: '\uD83C\uDDFB\uD83C\uDDEA',
+    'Chile'	: '\uD83C\uDDE8\uD83C\uDDF1',
+    'Luxembourg': '\uD83C\uDDF1\uD83C\uDDFA',
+    'Estonia'	: '\uD83C\uDDEA\uD83C\uDDEA',
+    'Colombia'	: '\uD83C\uDDE8\uD83C\uDDF4',
+    'Belarus'	: '\uD83C\uDDE7\uD83C\uDDFE',
+    'Senegal'	: '\uD83C\uDDF8\uD83C\uDDF3',
+    'Marocco'	: '\uD83C\uDDF2\uD83C\uDDE6',
+    'SouthSudan': '\uD83C\uDDF8\uD83C\uDDF8',
+    'Afghanistan': '\uD83C\uDDE6\uD83C\uDDEB',
+    'Mali'	: '\uD83C\uDDF2\uD83C\uDDF1',
+    'Slovenia'	: '\uD83C\uDDF8\uD83C\uDDEE',
+    'Brazil'	: '\uD83C\uDDE7\uD83C\uDDF7',
+    'Algeria'	: '\uD83C\uDDE9\uD83C\uDDFF',
+    'Tunisia'	: '\uD83C\uDDF9\uD83C\uDDF3',
+    'Egypt'	: '\uD83C\uDDEA\uD83C\uDDEC',
+    'Bangladesh': '\uD83C\uDDE7\uD83C\uDDE9',
+    'Indonesia'	: '\uD83C\uDDEE\uD83C\uDDE9',
+    'UAE'	: '\uD83C\uDDE6\uD83C\uDDEA',
+    'Taiwan'	: '\uD83C\uDDF9\uD83C\uDDFC',
+    'Pakistan'	: '\uD83C\uDDF5\uD83C\uDDF0',
+    'Latvia'	: '\uD83C\uDDF1\uD83C\uDDFB',
+    'Iran'	: '\uD83C\uDDEE\uD83C\uDDF7',
 };
