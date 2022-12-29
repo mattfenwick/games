@@ -10,6 +10,9 @@ const PeopleEmojis = {
     womanDancing: ['\uD83D\uDC83', 'lightpink'  ],
     vampire     : ['\uD83E\uDDDB', 'lightcoral' ],
     zombie      : ['\uD83E\uDDDF', 'lightseagreen'],
+    superhero   : ['\uD83E\uDDB8', 'lightorange'],
+    santaclaus  : ['\uD83C\uDF85\uD83C\uDFFB', 'white'],
+    snowman     : ['\u26C4', 'darkblue'],
 }
 
 
