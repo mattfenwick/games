@@ -2,19 +2,19 @@
 
 
 const PeopleEmojis = {
-    elf         : ['\uD83E\uDDDD', 'lightcyan'  ],
-    manDancing  : ['\uD83D\uDD7A', 'lightblue'  ],
-    manGuard    : ['\uD83D\uDC82', 'lightgray'  ],
-    ninja       : ['\uD83E\uDD77', 'lightgreen' ],
-    troll       : ['\uD83E\uDDCC', 'lightyellow'],
-    womanDancing: ['\uD83D\uDC83', 'lightpink'  ],
-    vampire     : ['\uD83E\uDDDB', 'lightcoral' ],
-    zombie      : ['\uD83E\uDDDF', 'lightseagreen'],
-    superhero   : ['\uD83E\uDDB8', 'whitesmoke'],
-    santaclaus  : ['\uD83C\uDF85\uD83C\uDFFB', 'yellowgreen'],
-    snowman     : ['\u26C4', 'ivory'],
-    princess    : ['\uD83D\uDC78', 'lavenderblush'],
-    prince      : ['\uD83E\uDD34\uD83C\uDFFB', 'orange'],
+    elf         : '\uD83E\uDDDD',
+    manDancing  : '\uD83D\uDD7A',
+    manGuard    : '\uD83D\uDC82',
+    ninja       : '\uD83E\uDD77',
+    troll       : '\uD83E\uDDCC',
+    womanDancing: '\uD83D\uDC83',
+    vampire     : '\uD83E\uDDDB',
+    zombie      : '\uD83E\uDDDF',
+    superhero   : '\uD83E\uDDB8',
+    santaclaus  : '\uD83C\uDF85\uD83C\uDFFB',
+    snowman     : '\u26C4',
+    princess    : '\uD83D\uDC78',
+    prince      : '\uD83E\uDD34\uD83C\uDFFB',
 }
 
 

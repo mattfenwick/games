@@ -20,7 +20,18 @@ function setShow(element, shouldShow) {
 
 
 // constants
-const PlayerEmojis = shuffle(Object.keys(PeopleEmojis));
+const PlayerColors = shuffle([
+    'lightcyan',
+    'lightblue',
+    'lightgray',
+    'lightgreen',
+    'lightyellow',
+    'lightpink',
+    'lightcoral',
+    'lightseagreen'
+]);
+
+const PlayerEmojis = shuffle(Object.values(PeopleEmojis));
 
 const FaceUpWaitMilliseconds = 1000;
 
@@ -273,7 +284,7 @@ class GameCell {
         this.y = y;
         this.char = char;
         this.state = GameCellStateFaceDown;
-        this.owner = null;
+        this.ownerColor = null;
     }
 
     flipFaceUp() {
@@ -290,12 +301,12 @@ class GameCell {
         this.state = GameCellStateFaceDown;
     }
 
-    capture(owner) {
+    capture(ownerColor) {
         if (this.state !== GameCellStateFaceUp) {
             throw new Error(`unable to capture: in state ${this.state}`);
         }
         this.state = GameCellStateCaptured;
-        this.owner = owner;
+        this.ownerColor = ownerColor;
     }
 
     gameOver() {
@@ -308,9 +319,9 @@ class GameCell {
     get backgroundColor() {
         switch (this.state) {
             case GameCellStateFaceDown: return '';
-            case GameCellStateFaceUp: return '';
-            case GameCellStateCaptured: return PeopleEmojis[this.owner][1];
-            case GameCellStateOver: return PeopleEmojis[this.owner][1];
+            case GameCellStateFaceUp:   return '';
+            case GameCellStateCaptured: return this.ownerColor;
+            case GameCellStateOver:     return this.ownerColor;
             default: throw new Error(`invalid GameCellState ${this.state}`);
         }
     }
@@ -318,9 +329,9 @@ class GameCell {
     get domTextContent() {
         switch (this.state) {
             case GameCellStateFaceDown: return CardBack;
-            case GameCellStateFaceUp: return this.char;
+            case GameCellStateFaceUp:   return this.char;
             case GameCellStateCaptured: return '';
-            case GameCellStateOver: return this.char;
+            case GameCellStateOver:     return this.char;
             default: throw new Error(`invalid GameCellState ${this.state}`);
         }
     }
@@ -415,8 +426,8 @@ class Game {
         // found a matching pair: add it to the player's pile
         if (fst.char === snd.char) {
             foundPair = {player: this.nextPlayer};
-            fst.capture(this.players[this.nextPlayer]);
-            snd.capture(this.players[this.nextPlayer]);
+            fst.capture(PlayerColors[this.nextPlayer]);
+            snd.capture(PlayerColors[this.nextPlayer]);
             this.playerPairs[this.nextPlayer].push(faceUp);
             this.remainingPairs--;
             // no more cards left: game is over
@@ -453,10 +464,10 @@ class Game {
         let maxScore = Math.max(...this.players.map((p, ix) => this.playerPairs[ix].length ));
         return this.players.map((p, ix) => {
             return {
-                'symbol': PeopleEmojis[p][0],
-                'backgroundColor': PeopleEmojis[p][1],
-                'hasBorder': (this.state !== GameStateOver) ? ix === this.nextPlayer : (this.playerPairs[ix].length === maxScore),
-                'score': this.playerPairs[ix].length,
+                'symbol'        : p,
+                'backgroundColor': PlayerColors[ix],
+                'hasBorder'     : (this.state !== GameStateOver) ? ix === this.nextPlayer : (this.playerPairs[ix].length === maxScore),
+                'score'         : this.playerPairs[ix].length,
             };
         });
     }
