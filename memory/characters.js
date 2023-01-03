@@ -10,25 +10,31 @@ const PeopleEmojis = {
     womanDancing: ['\uD83D\uDC83', 'lightpink'  ],
     vampire     : ['\uD83E\uDDDB', 'lightcoral' ],
     zombie      : ['\uD83E\uDDDF', 'lightseagreen'],
-    superhero   : ['\uD83E\uDDB8', 'lightorange'],
-    santaclaus  : ['\uD83C\uDF85\uD83C\uDFFB', 'white'],
-    snowman     : ['\u26C4', 'darkblue'],
+    superhero   : ['\uD83E\uDDB8', 'whitesmoke'],
+    santaclaus  : ['\uD83C\uDF85\uD83C\uDFFB', 'yellowgreen'],
+    snowman     : ['\u26C4', 'ivory'],
+    princess    : ['\uD83D\uDC78', 'lavenderblush'],
+    prince      : ['\uD83E\uDD34\uD83C\uDFFB', 'orange'],
 }
 
 
 const CardBack = '\uD83C\uDCA0';
 
 
-const FoodTheme     = 'food';
-const AnimalsTheme  = 'animals';
-const MixedTheme    = 'mixed';
+const FoodTheme             = 'food';
+const AnimalsTheme          = 'animals';
+const FoodAndAnimalsTheme   = 'food and animals';
+const FlagTheme             = 'flags';
+const MixedTheme            = 'mixed';
 
 
 function GetCharacters(theme) {
     switch (theme) {
-        case FoodTheme: return FoodEmojis;
-        case AnimalsTheme: return AnimalEmojis;
-        case MixedTheme: return CombineMaps([FoodEmojis, AnimalEmojis]);
+        case FoodTheme:             return FoodEmojis;
+        case AnimalsTheme:          return AnimalEmojis;
+        case FoodAndAnimalsTheme:   return CombineMaps([FoodEmojis, AnimalEmojis]);
+        case FlagTheme:             return FlagEmojis;
+        case MixedTheme:            return CombineMaps([FoodEmojis, AnimalEmojis, FlagEmojis]);
         default: throw new Error(`invalid theme ${theme}`);
     }
 }
