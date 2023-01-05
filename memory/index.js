@@ -169,7 +169,7 @@ class Manager {
             // special cell showing y half of coordinate; doesn't need to be updated
             //   so no need to add to model
             let headerColumnCell = domRow.insertCell();
-            headerColumnCell.textContent = y;
+            headerColumnCell.textContent = String.fromCharCode(y + 'A'.charCodeAt());
             headerColumnCell.classList.add(boardHeaderClass);
 
             for (let x = 0; x < xCount; x++) {
