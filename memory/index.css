@@ -20,11 +20,12 @@
 
 .game-board-cell {
     text-align: center;
-    border: 3px dashed black;
-    font-size: 55px;
+    border: 1px dashed black;
+    font-size: 70px;
     min-width: 80px;
+    min-height: 95px;
     width: 80px;
-    height: 80px;
+    height: 95px;
     margin: 0px;
     padding: 0px;
 }
@@ -44,6 +45,8 @@
     text-align: center;
     font-size: 60px;
     padding: 10px;
+    min-width: 80px;
+    width: 80px;
 }
 
 .game-active-player td {

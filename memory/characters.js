@@ -26,6 +26,7 @@ const AnimalsTheme          = 'animals';
 const FoodAndAnimalsTheme   = 'food and animals';
 const FlagTheme             = 'flags';
 const MixedTheme            = 'mixed';
+const PlayingCardsTheme     = 'playing cards';
 
 
 function GetCharacters(theme) {
@@ -34,7 +35,8 @@ function GetCharacters(theme) {
         case AnimalsTheme:          return AnimalEmojis;
         case FoodAndAnimalsTheme:   return CombineMaps([FoodEmojis, AnimalEmojis]);
         case FlagTheme:             return FlagEmojis;
-        case MixedTheme:            return CombineMaps([FoodEmojis, AnimalEmojis, FlagEmojis]);
+        case MixedTheme:            return CombineMaps([FoodEmojis, AnimalEmojis, FlagEmojis, PlayingCardEmojis]);
+        case PlayingCardsTheme:     return PlayingCardEmojis;
         default: throw new Error(`invalid theme ${theme}`);
     }
 }
@@ -53,8 +55,30 @@ function CombineMaps(maps) {
     return out;
 }
 
+class Char {
+    constructor(description, value, color) {
+        this.description = description;
+        this.value = value;
+        this.color = color;
+    }
+}
 
-const FoodEmojis = {
+function MapObject(f, obj) {
+    let out = {};
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            let value = f(key, obj[key]);
+            // console.log(`key: ${key}, in: ${obj[key]}, out: ${value}`);
+            out[key] = value;
+        }
+    }
+    return out;
+}
+
+
+// start: foods
+
+const FoodEmojisRaw = {
     'blueberries'   : '\uD83E\uDED0',
     'bell pepper'   : '\uD83E\uDED1',
     'olive'         : '\uD83E\uDED2',
@@ -171,7 +195,13 @@ const FoodEmojis = {
     'cooking'           : '\uD83C\uDF73',
 };
 
-const AnimalEmojis = {
+const FoodEmojis = MapObject((k, v) => new Char(k, v, 'black'), FoodEmojisRaw);
+
+// end: foods
+
+// start: animals
+
+const AnimalEmojisRaw = {
     'rat'           : '\uD83D\uDC00',
     'mouse'         : '\uD83D\uDC01',
     'ox'            : '\uD83D\uDC02',
@@ -289,3 +319,250 @@ const AnimalEmojis = {
     'bison'     : '\uD83E\uDDAC',
     'seal'      : '\uD83E\uDDAD',
 };
+
+const AnimalEmojis = MapObject((k, v) => new Char(k, v, 'black'), AnimalEmojisRaw);
+
+// end: foods
+
+// start: flags
+
+const FlagLetterToRis = {
+    'A': '\uDDE6',
+    'B': '\uDDE7',
+    'C': '\uDDE8',
+    'D': '\uDDE9',
+    'E': '\uDDEA',
+    'F': '\uDDEB',
+    'G': '\uDDEC',
+    'H': '\uDDED',
+    'I': '\uDDEE',
+    'J': '\uDDEF',
+    'K': '\uDDF0',
+    'L': '\uDDF1',
+    'M': '\uDDF2',
+    'N': '\uDDF3',
+    'O': '\uDDF4',
+    'P': '\uDDF5',
+    'Q': '\uDDF6',
+    'R': '\uDDF7',
+    'S': '\uDDF8',
+    'T': '\uDDF9',
+    'U': '\uDDFA',
+    'V': '\uDDFB',
+    'W': '\uDDFC',
+    'X': '\uDDFD',
+    'Y': '\uDDFE',
+    'Z': '\uDDFF',
+};
+
+function BuildFlagEmoji(riss) {
+    if (riss.length !== 2) {
+        throw new Error(`expected country code of length 2, got ${riss}`);
+    }
+    return ['\uD83C', FlagLetterToRis[riss[0]], '\uD83C', FlagLetterToRis[riss[1]]].join('')
+}
+
+// See: https://en.wikipedia.org/wiki/Regional_indicator_symbol#Emoji_flag_sequences
+//   Sort by 'region'
+const CountryNameToLetters = {
+    'Afghanistan'       : 'AF',
+    'Algeria'           : 'DZ',
+    'Argentina'         : 'AR',
+    'Australia'         : 'AU',
+    'Austria'           : 'AT',
+    'Bangladesh'        : 'BD',
+    'Belarus'           : 'BY',
+    'Belgium'           : 'BE',
+    'Brazil'            : 'BR',
+    'Bulgaria'          : 'BG',
+    'Canada'            : 'CA',
+    'Chile'             : 'CL',
+    'China'             : 'CN',
+    'Colombia'          : 'CO',
+    'Croatia'           : 'HR',
+    'Denmark'           : 'DK',
+    'Egypt'             : 'EG',
+    'Estonia'           : 'EE',
+    'European Union'    : 'EU',
+    'France'            : 'FR',
+    'French Guiana'     : 'GF',
+    'French Polynesia'  : 'PF',
+    'French Southern Territories': 'TF',
+    'Finland'           : 'FI',
+    'Germany'           : 'DE',
+    'Greece'            : 'GR',
+    'Hungary'           : 'HU',
+    'Iceland'           : 'IS',
+    'India'             : 'IN',
+    'Indonesia'         : 'ID',
+    'Iran'              : 'IR',
+    'Ireland'           : 'IE',
+    'Israel'            : 'IL',
+    'Italy'             : 'IT',
+    'Jamaica'           : 'JM',
+    'Japan'             : 'JP',
+    'Kazakhstan'        : 'KZ',
+    'Kyrgyzstan'        : 'KG',
+    'Latvia'            : 'LV',
+    'Luxembourg'        : 'LU',
+    'Mali'              : 'ML',
+    'Martinique'        : 'MQ',
+    'Mexico'            : 'MX',
+    'Monaco'            : 'MC',
+    'Mongolia'          : 'MN',
+    'Morocco'           : 'MA',
+    'Netherlands'       : 'NL',
+    'New Zealand'       : 'NZ',
+    'Norway'            : 'NO',
+    'Oman'              : 'OM',
+    'Pakistan'          : 'PK',
+    'Poland'            : 'PL',
+    'Portugal'          : 'PT',
+    'Qatar'             : 'QA',
+    'Romania'           : 'RO',
+    'Russia'            : 'RU',
+    'Senegal'           : 'SN',
+    'Serbia'            : 'RS',
+    'Slovenia'          : 'SI',
+    'South Africa'      : 'ZA',
+    'South Korea'       : 'KR',
+    'South Sudan'       : 'SS',
+    'Spain'             : 'ES',
+    'Sweden'            : 'SE',
+    'Switzerland'       : 'CH',
+    'Tajikistan'        : 'TJ',
+    'Tunisia'           : 'TN',
+    'Turkey'            : 'TR',
+    'Turkmenistan'      : 'TM',
+    'Ukraine'           : 'UA',
+    'United Arab Emirates' : 'AE',
+    'United Kingdom'    : 'GB',
+    'United Nations'    : 'UN',
+    'United States'     : 'US',
+    'Taiwan'            : 'TW',
+    'Vatican City'      : 'VA',
+    'Venezuela'         : 'VE',
+    'Vietnam'           : 'VN',
+    'Yemen'             : 'YE',
+    'Zambia'            : 'ZM',
+    'Zimbabwe'          : 'ZW',
+};
+
+const FlagEmojis = MapObject((k, v) => new Char(k, BuildFlagEmoji(v), 'black'), CountryNameToLetters);
+
+// end: flags
+
+// start: playing cards
+
+const Blacks = {
+    // "back": "\uD83C\uDCA0", // don't use -- would be confusing with upside down cards
+    "spades ace"    : "\uD83C\uDCA1",
+    "spades 2"      : "\uD83C\uDCA2",
+    "spades 3"      : "\uD83C\uDCA3",
+    "spades 4"      : "\uD83C\uDCA4",
+    "spades 5"      : "\uD83C\uDCA5",
+    "spades 6"      : "\uD83C\uDCA6",
+    "spades 7"      : "\uD83C\uDCA7",
+    "spades 8"      : "\uD83C\uDCA8",
+    "spades 9"      : "\uD83C\uDCA9",
+    "spades 10"     : "\uD83C\uDCAA",
+    "spades J"      : "\uD83C\uDCAB",
+    "spades knight" : "\uD83C\uDCAC",
+    "spades Q"      : "\uD83C\uDCAD",
+    "spades K"      : "\uD83C\uDCAE",
+    // "empty"      : "\uD83C\uDCAF",
+
+    "black joker"   : "\uD83C\uDCCF",
+
+    // "empty": "\uD83C\uDCD0", // don't use -- would be confusing with upside down cards
+    "clubs ace"    : "\uD83C\uDCD1",
+    "clubs 2"      : "\uD83C\uDCD2",
+    "clubs 3"      : "\uD83C\uDCD3",
+    "clubs 4"      : "\uD83C\uDCD4",
+    "clubs 5"      : "\uD83C\uDCD5",
+    "clubs 6"      : "\uD83C\uDCD6",
+    "clubs 7"      : "\uD83C\uDCD7",
+    "clubs 8"      : "\uD83C\uDCD8",
+    "clubs 9"      : "\uD83C\uDCD9",
+    "clubs 10"     : "\uD83C\uDCDA",
+    "clubs J"      : "\uD83C\uDCDB",
+    "clubs knight" : "\uD83C\uDCDC",
+    "clubs Q"      : "\uD83C\uDCDD",
+    "clubs K"      : "\uD83C\uDCDE",
+
+    "white joker"  : "\uD83C\uDCDF",
+
+    // these don't seem to render on some browsers
+    // "trump fool"    : "\uD83C\uDCE0",
+    // "trump 1"       : "\uD83C\uDCE1",
+    // "trump 2"       : "\uD83C\uDCE2",
+    // "trump 3"       : "\uD83C\uDCE3",
+    // "trump 4"       : "\uD83C\uDCE4",
+    // "trump 5"       : "\uD83C\uDCE5",
+    // "trump 6"       : "\uD83C\uDCE6",
+    // "trump 7"       : "\uD83C\uDCE7",
+    // "trump 8"       : "\uD83C\uDCE8",
+    // "trump 9"       : "\uD83C\uDCE9",
+    // "trump 10"      : "\uD83C\uDCEA",
+    // "trump 11"      : "\uD83C\uDCEB",
+    // "trump 12"      : "\uD83C\uDCEC",
+    // "trump 13"      : "\uD83C\uDCED",
+    // "trump 14"      : "\uD83C\uDCEE",
+    // "trump 15"      : "\uD83C\uDCEF",
+    // "trump 16"      : "\uD83C\uDCF0",
+    // "trump 17"      : "\uD83C\uDCF1",
+    // "trump 18"      : "\uD83C\uDCF2",
+    // "trump 19"      : "\uD83C\uDCF3",
+    // "trump 20"      : "\uD83C\uDCF4",
+    // "trump 21"      : "\uD83C\uDCF5",
+};
+
+const Reds = {
+    // "empty": "\uD83C\uDCB0",
+    "hearts ace"    : "\uD83C\uDCB1",
+    "hearts 2"      : "\uD83C\uDCB2",
+    "hearts 3"      : "\uD83C\uDCB3",
+    "hearts 4"      : "\uD83C\uDCB4",
+    "hearts 5"      : "\uD83C\uDCB5",
+    "hearts 6"      : "\uD83C\uDCB6",
+    "hearts 7"      : "\uD83C\uDCB7",
+    "hearts 8"      : "\uD83C\uDCB8",
+    "hearts 9"      : "\uD83C\uDCB9",
+    "hearts 10"     : "\uD83C\uDCBA",
+    "hearts J"      : "\uD83C\uDCBB",
+    "hearts knight" : "\uD83C\uDCBC",
+    "hearts Q"      : "\uD83C\uDCBD",
+    "hearts K"      : "\uD83C\uDCBE",
+
+    // doesn't seem to render on some browsers
+    // "red joker"     : "\uD83C\uDCBF",
+
+    // "empty": "\uD83C\uDCC0",
+    "diamonds ace"    : "\uD83C\uDCC1",
+    "diamonds 2"      : "\uD83C\uDCC2",
+    "diamonds 3"      : "\uD83C\uDCC3",
+    "diamonds 4"      : "\uD83C\uDCC4",
+    "diamonds 5"      : "\uD83C\uDCC5",
+    "diamonds 6"      : "\uD83C\uDCC6",
+    "diamonds 7"      : "\uD83C\uDCC7",
+    "diamonds 8"      : "\uD83C\uDCC8",
+    "diamonds 9"      : "\uD83C\uDCC9",
+    "diamonds 10"     : "\uD83C\uDCCA",
+    "diamonds J"      : "\uD83C\uDCCB",
+    "diamonds knight" : "\uD83C\uDCCC",
+    "diamonds Q"      : "\uD83C\uDCCD",
+    "diamonds K"      : "\uD83C\uDCCE",
+    // "black joker"  : "\uD83C\uDCCF", // this is actually under Blacks
+};
+
+function GetPlayingCardEmojis() {
+    let cards = [
+        MapObject((k, v) => new Char(k, v, "black"), Blacks),
+        MapObject((k, v) => new Char(k, v, "red"), Reds),
+    ];
+    return CombineMaps(cards);
+}
+
+const PlayingCardEmojis = GetPlayingCardEmojis();
+
+// end: playing cards

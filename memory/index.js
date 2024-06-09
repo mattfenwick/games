@@ -218,6 +218,7 @@ class Manager {
         console.log(`${cellModel}, ${x}, ${y}, ${this.cellRows.length}, ${this.game.board.length}`);
         this.cellRows[y][x].textContent = this.game.board[x][y].domTextContent;
         this.cellRows[y][x].style.background = this.game.board[x][y].backgroundColor;
+        this.cellRows[y][x].style.color = this.game.board[x][y].color;
     }
 
     didChangeGameState(event) {
@@ -326,12 +327,22 @@ class GameCell {
         }
     }
 
+    get color() {
+        switch (this.state) {
+            case GameCellStateFaceDown: return 'black';
+            case GameCellStateFaceUp:   return this.char.color;
+            case GameCellStateCaptured: return 'black';
+            case GameCellStateOver:     return this.char.color;
+            default: throw new Error(`invalid GameCellState ${this.state}`);
+        }
+    }
+
     get domTextContent() {
         switch (this.state) {
             case GameCellStateFaceDown: return CardBack;
-            case GameCellStateFaceUp:   return this.char;
+            case GameCellStateFaceUp:   return this.char.value;
             case GameCellStateCaptured: return '';
-            case GameCellStateOver:     return this.char;
+            case GameCellStateOver:     return this.char.value;
             default: throw new Error(`invalid GameCellState ${this.state}`);
         }
     }

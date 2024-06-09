@@ -7,10 +7,11 @@ function printCharacters() {
         let domRow = table.insertRow();
 
         let valueCell = domRow.insertCell();
-        valueCell.textContent = value;
+        valueCell.textContent = value.value;
+        valueCell.style.color = value.color;
 
         let nameCell = domRow.insertCell();
-        nameCell.textContent = key;
+        nameCell.textContent = value.description;
     }
 }
 
