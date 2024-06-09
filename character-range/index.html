@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Characters</title>
+    <link href="./index.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+
+<div class="wrapper-horizontal">
+    <table>
+        <tr>
+            <td>Start</td>
+            <td><input type="number" id="start" name="start" value="65"></td>
+        </tr>
+        <tr>
+            <td>End</td>
+            <td><input type="number" id="end" name="end" value="90"></td>
+        </tr>
+    </table>
+
+    <br />
+    <button id="generate">Generate</button>
+    <br />
+
+    <table>
+        <thead>
+            <tr>
+                <th>Code point</th>
+                <th>Character</th>
+            </tr>
+        </thead>
+        <tbody id="characters"></tbody>
+    </table>
+</div>
+
+
+<script src="./index.js"></script>
+
+</body>
+</html>
