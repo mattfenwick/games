@@ -39,3 +39,7 @@ th, td {
     font-size: x-large;
     border: 2px double;
 }
+
+#config, #config > * {
+    font-size: x-large;
+}

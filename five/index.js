@@ -9,6 +9,7 @@ const playerTurnClass = 'player-turn';
 
 let configDiv = document.getElementById('config');
 let configSizeDropdown = document.getElementById('config.size');
+let configWinSize = document.getElementById('config.winSize');
 let configStartButton = document.getElementById('config.start');
 
 let gameDiv = document.getElementById('game');
@@ -84,7 +85,8 @@ class Five {
             default:
                 throw new Error(`invalid size ${size}`);
         }
-        this.boardManager.startNewGame(width, height);
+        let winSize = parseInt(configWinSize.value, 10);
+        this.boardManager.startNewGame(width, height, winSize);
     }
 
     didClickRestart() {
@@ -105,12 +107,12 @@ class BoardManager {
         this.players = [Potato, Tomato];
     }
 
-    startNewGame(width, height) {
+    startNewGame(width, height, winSize) {
         if (this.game !== null && this.game.state === GameStateInProgress) {
             throw new Error(`unable to start game: game already in progress`);
         }
         // 1. create board model
-        this.game = new Game(width, height, this.players);
+        this.game = new Game(width, height, this.players, winSize);
         // 2. clear out old table children
         // 3. create new table children
         // 4. add listeners
@@ -213,7 +215,7 @@ const GameStateWon = 'gamestate: won';
 const GameStateNoMoves = 'gamestate: no moves';
 
 class Game {
-    constructor(width, height, players) {
+    constructor(width, height, players, winSize) {
         players.forEach(function(p, ix) {
             if (!p) {
                 throw new Error("invalid player: falsy at index " + ix);
@@ -231,6 +233,10 @@ class Game {
         this.winner = null;
 
         this.board = Array(width).fill(null).map(x => Array(height).fill(null));
+        if (winSize < 3 || winSize > 8) {
+            throw new Error("invalid win size: must be 3 <= win size <= 8, found %d", winSize);
+        }
+        this.winSize = winSize;
     }
 
     move(x, y) {
@@ -304,17 +310,17 @@ class Game {
 
     checkForWinner() {
         let xs = Array(this.width).fill(0).map((_, i) => i);
-        let xStartsWidth = (this.width - 4 > 0) ? (this.width - 4) : 0;
+        let xStartsWidth = (this.width - this.winSize > 0) ? (this.width - this.winSize) : 0;
         let xStarts = Array(xStartsWidth).fill(0).map((_, i) => i);
-        let yStartsWidth = (this.height - 4 > 0) ? (this.height - 4) : 0;
+        let yStartsWidth = (this.height - this.winSize > 0) ? (this.height - this.winSize) : 0;
         let ys = Array(yStartsWidth).fill(0).map((_, i) => i);
         let yStarts = Array(this.height).fill(0).map((_, i) => i);
-        let five = [0, 1, 2, 3, 4];
+        let indices = [...Array(this.winSize).keys()];
         let self = this;
         // horizontal
         for (const x of xStarts) {
             for (const y of ys) {
-                let positions = five.map(offset => [x + offset, y]);
+                let positions = indices.map(offset => [x + offset, y]);
                 let winner = self.areLocationsTakenAndSame(positions);
                 if (winner) {
                     return {'winner': winner, 'positions': positions};
@@ -324,7 +330,7 @@ class Game {
         // vertical
         for (const x of xs) {
             for (const y of yStarts) {
-                let positions = five.map(offset => [x, y + offset]);
+                let positions = indices.map(offset => [x, y + offset]);
                 let winner = self.areLocationsTakenAndSame(positions);
                 if (winner) {
                     return {'winner': winner, 'positions': positions};
@@ -334,7 +340,7 @@ class Game {
         // diagonal: top left -> bottom right
         for (const x of xStarts) {
             for (const y of yStarts) {
-                let positions = five.map(offset => [x + offset, y + offset]);
+                let positions = indices.map(offset => [x + offset, y + offset]);
                 let winner = self.areLocationsTakenAndSame(positions);
                 if (winner) {
                     return {'winner': winner, 'positions': positions};
@@ -344,7 +350,7 @@ class Game {
         // diagonal: bottom left -> top right
         for (const x of xStarts) {
             for (const y of yStarts) {
-                let positions = five.map(offset => [x + offset, y + 4 - offset]);
+                let positions = indices.map(offset => [x + offset, y + 4 - offset]);
                 let winner = self.areLocationsTakenAndSame(positions);
                 if (winner) {
                     return {'winner': winner, 'positions': positions};
@@ -380,7 +386,7 @@ class Game {
 
 // tests
 function runTests() {
-    let board = new Game(6, 10, ["X", "O"]);
+    let board = new Game(6, 10, ["X", "O"], 5);
 
     console.log(board.toPrettyString());
 
@@ -404,7 +410,7 @@ function runTests() {
         [4, 0],
     ];
 
-    let board2 = new Game(6, 10, ["X", "O"]);
+    let board2 = new Game(6, 10, ["X", "O"], 5);
     for (const move of moves) {
         console.log(`board2 move: ${move}`);
         board2.move.apply(board2, move);
@@ -422,7 +428,7 @@ runTests();
 let five = new Five();
 
 let didClickConfigStart = () => {
-    console.log('start clicked! %s', configSizeDropdown.value);
+    console.log('start clicked! %s, %s', configSizeDropdown.value, configWinSize.value);
     five.didClickStart();
 };
 configStartButton.addEventListener('click', didClickConfigStart);
