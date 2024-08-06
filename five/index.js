@@ -1,7 +1,9 @@
 'use strict';
 
-const Potato = "\uD83E\uDD54";
-const Tomato = "\uD83C\uDF45";
+const Potato    = "\uD83E\uDD54";
+const Tomato    = "\uD83C\uDF45";
+const Eggplant  = "\uD83C\uDF46";
+const Peach     = "\uD83C\uDF51";
 
 
 const boardCellClass = 'game.board.cell';
@@ -10,11 +12,11 @@ const playerTurnClass = 'player-turn';
 let configDiv = document.getElementById('config');
 let configSizeDropdown = document.getElementById('config.size');
 let configWinSize = document.getElementById('config.winSize');
+let configPlayers = document.getElementById('config.players');
 let configStartButton = document.getElementById('config.start');
 
 let gameDiv = document.getElementById('game');
-let gameFirstPlayer = document.getElementById('game-first-player');
-let gameSecondPlayer = document.getElementById('game-second-player');
+let gamePlayerDivs = document.querySelectorAll(".game-player");
 let gameBoardTable = document.getElementById('game-board');
 let gameBoardTbody = document.getElementById('game-board-tbody');
 let gameRestartButton = document.getElementById('game.restart');
@@ -86,7 +88,8 @@ class Five {
                 throw new Error(`invalid size ${size}`);
         }
         let winSize = parseInt(configWinSize.value, 10);
-        this.boardManager.startNewGame(width, height, winSize);
+        let playerCount = parseInt(configPlayers.value, 10);
+        this.boardManager.startNewGame(width, height, winSize, playerCount);
     }
 
     didClickRestart() {
@@ -102,17 +105,24 @@ class BoardManager {
     constructor() {
         this.game = null;
         this.cellRows = [];
-        gameFirstPlayer.textContent = `Player 1: ${Potato}`;
-        gameSecondPlayer.textContent = `Player 2: ${Tomato}`;
-        this.players = [Potato, Tomato];
+        this.players = [Potato, Tomato, Eggplant, Peach];
+        let self = this;
+        gamePlayerDivs.forEach(function (playerDiv, ix) {
+            playerDiv.textContent = `Player ${ix + 1}: ${self.players[ix]}`;
+        });
     }
 
-    startNewGame(width, height, winSize) {
+    startNewGame(width, height, winSize, playerCount) {
         if (this.game !== null && this.game.state === GameStateInProgress) {
             throw new Error(`unable to start game: game already in progress`);
         }
+        let players = this.players.slice(0, playerCount);
+        gamePlayerDivs.forEach(function (playerDiv, ix) {
+            // only show playerDivs as indicated by playerCount
+            setShow(playerDiv, ix < playerCount);
+        });
         // 1. create board model
-        this.game = new Game(width, height, this.players, winSize);
+        this.game = new Game(width, height, players, winSize);
         // 2. clear out old table children
         // 3. create new table children
         // 4. add listeners
@@ -149,16 +159,13 @@ class BoardManager {
 
     setActivePlayer(playerIndex) {
         console.log(`set active player to index ${playerIndex}`);
-        if (playerIndex === 0) {
-            gameFirstPlayer.classList.add(playerTurnClass);
-            gameSecondPlayer.classList.remove(playerTurnClass);
-        } else if (playerIndex === 1) {
-            gameFirstPlayer.classList.remove(playerTurnClass);
-            gameSecondPlayer.classList.add(playerTurnClass);
-        } else {
-            gameFirstPlayer.classList.remove(playerTurnClass);
-            gameSecondPlayer.classList.remove(playerTurnClass);
-        }
+        gamePlayerDivs.forEach(function (playerDiv, ix) {
+            if (ix === playerIndex) {
+                playerDiv.classList.add(playerTurnClass);
+            } else {
+                playerDiv.classList.remove(playerTurnClass);
+            }
+        });
     }
 
     didClickCell(cell, x, y) {
@@ -221,9 +228,6 @@ class Game {
                 throw new Error("invalid player: falsy at index " + ix);
             }
         })
-        if (players.length !== 2) {
-            throw new Error("expected 2 players, found %d", players.length);
-        }
         this.players = players;
         this.width = width;
         this.height = height;
@@ -234,7 +238,7 @@ class Game {
 
         this.board = Array(width).fill(null).map(x => Array(height).fill(null));
         if (winSize < 3 || winSize > 8) {
-            throw new Error("invalid win size: must be 3 <= win size <= 8, found %d", winSize);
+            throw new Error(`invalid win size: must be 3 <= win size <= 8, found ${winSize}`);
         }
         this.winSize = winSize;
     }
