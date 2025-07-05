@@ -355,36 +355,39 @@ class Game {
 
         this.state = GameStateMovePart1;
         this.nextPlayer = 0;
+        const matchSize = 2;
 
-        let size = width * height;
-        if (size % 2 > 0) {
-            throw new Error(`invalid size: must be even, got ${size}`);
+        const size = width * height;
+        if (size % matchSize > 0) {
+            throw new Error(`invalid size: must divisible by ${matchSize}, got ${size}`);
         }
-        let half = size / 2;
+        const setsCount = size / matchSize;
         let availableChars = Object.values(cardCharacters);
         if (isRandom) {
             availableChars = shuffle(availableChars);
         }
-        if (half > availableChars.length) {
-            throw new Error(`game board too large: need ${size}, max chars is ${availableChars.length * 2}`);
+        if (setsCount > availableChars.length) {
+            throw new Error(`game board too large: need ${size}, max chars is ${availableChars.length * matchSize}`);
         }
-        let chars = availableChars.slice(0, half);
-        let charPairs = chars.concat(chars);
+        let chars = [];
+        for (let i = 0; i < matchSize; i++) {
+            chars = chars.concat(availableChars.slice(0, setsCount));
+        }
         if (isRandom) {
-            charPairs = shuffle(charPairs);
+            chars = shuffle(chars);
         }
         this.board = Array(width).fill(null).map(x => Array(height).fill(null));
         let i = 0;
         for (let row = 0; row < width; row++) {
             for (let col = 0; col < height; col++) {
-                this.board[row][col] = new GameCell(row, col, charPairs[i]);
+                this.board[row][col] = new GameCell(row, col, chars[i]);
                 i++;
             }
         }
 
         // TODO how to handle these ?  perf optimization ?
         this.faceUp = null;
-        this.remainingPairs = half;
+        this.remainingPairs = setsCount;
         this.turns = [];
     }
 
