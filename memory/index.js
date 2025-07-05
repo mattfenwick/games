@@ -116,7 +116,6 @@ class Manager {
         let size = BoardSizeDimensions(configSizeDropdown.value);
         this.width = size[0];
         this.height = size[1];
-        this.faceUpWaitMilliseconds = FaceUpWaitMilliseconds;
         this.cardCharacters = GetCharacters(configThemeDropdown.value);
 
         console.log(`players: ${this.players}, ${playerCount}, ${this.players.slice(0, playerCount)}`);
@@ -213,9 +212,9 @@ class Manager {
     }
 
     updateCardText(cellModel) {
-        let x = cellModel.x;
-        let y = cellModel.y;
-        console.log(`${cellModel}, ${x}, ${y}, ${this.cellRows.length}, ${this.game.board.length}`);
+        console.log(`update card text ${JSON.stringify(cellModel)}`);
+        const x = cellModel.x;
+        const y = cellModel.y;
         this.cellRows[y][x].textContent = this.game.board[x][y].domTextContent;
         this.cellRows[y][x].style.background = this.game.board[x][y].backgroundColor;
         this.cellRows[y][x].style.color = this.game.board[x][y].color;
@@ -226,19 +225,12 @@ class Manager {
         event.updateCells.forEach(coord => this.updateCardText(coord));
         this.refreshScoreArea(this.game.getPlayerScores());
         this.refreshTurnCount(this.game.turns.length);
-        let self = this;
         switch (event.state) {
             case GameStateMovePart1:
                 break;
             case GameStateMovePart2:
                 break;
             case GameStateFaceUp:
-                console.log(`setting timeout`);
-                setTimeout(function() {
-                    console.log(`running timeout`);
-                    self.game.finishTurn();
-                }, this.faceUpWaitMilliseconds);
-                // ignore clicks until state change -> move part1
                 break;
             case GameStateOver:
                 this.setState(ManagerStateOver);
@@ -417,6 +409,13 @@ class Game {
             cell.flipFaceUp();
             this.faceUp.push(cell);
             this.setState({state: GameStateFaceUp, updateCells: [cell]});
+            console.log(`setting timeout to capture pair or flip cards back to face down`);
+            const self = this;
+            setTimeout(function() {
+                console.log(`running capture/flip timeout`);
+                self.finishTurn();
+            }, FaceUpWaitMilliseconds);
+            // ignore clicks until state has changed back to move part1
         } else {
             throw new Error(`cannot move: game not in right state (state: ${this.state})`);
         }
@@ -466,7 +465,7 @@ class Game {
     }
 
     setState(event) {
-        console.log(`game: set state to ${event}\n${this.toPrettyStringUser()}\n${this.toPrettyStringCard()}`);
+        console.log(`game: set state to ${JSON.stringify(event)}\n${this.toPrettyStringUser()}\n${this.toPrettyStringCard()}`);
         this.state = event.state;
         this.didChangeState(event);
     }
