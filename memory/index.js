@@ -34,21 +34,27 @@ const PlayerColors = shuffle([
 const PlayerEmojis = shuffle(Object.values(PeopleEmojis));
 
 const FaceUpWaitMilliseconds = 1000;
-const DefaultMatchSize = 2;
 
-const BoardSizeTiny     = 'tiny';
 const BoardSizeSmall    = 'small';
 const BoardSizeMedium   = 'medium';
 const BoardSizeLarge    = 'large';
 const BoardSizeXL       = 'xl';
 
-function BoardSizeDimensions(boardSize) {
+function BoardSizeDimensions(boardSize, matchSize) {
+    if (matchSize < 2 || matchSize > 4) {
+        throw new Error(`invalid match size ${matchSize}`);
+    }
     switch (boardSize) {
-        case BoardSizeTiny: return [2, 5];
-        case BoardSizeSmall: return [4, 4];
+        case BoardSizeSmall: return [4, 3];
         case BoardSizeMedium: return [9, 4];
         case BoardSizeLarge: return [12, 6];
-        case BoardSizeXL: return [14, 8];
+        case BoardSizeXL:
+            switch (matchSize) {
+                case 3:
+                    return [12, 9];
+                default:
+                    return [14, 8];
+            }
         default: throw new Error(`invalid board size ${boardSize}`);
     }
 }
@@ -57,10 +63,9 @@ const ManagerStateConfig        = 'managerstate: config';
 const ManagerStateInProgress    = 'managerstate: in progress';
 const ManagerStateOver          = 'managerstate: over';
 
-const GameStateMovePart1    = 'gamestate: move part 1';
-const GameStateMovePart2    = 'gamestate: move part 2';
-const GameStateFaceUp    = 'gamestate: face up';
-const GameStateOver         = 'gamestate: over';
+const GameStateMove   = 'gamestate: move';
+const GameStateFaceUp = 'gamestate: face up';
+const GameStateOver   = 'gamestate: over';
 
 const boardCellClass    = 'game-board-cell';
 const boardHeaderClass  = 'game-board-header';
@@ -69,19 +74,20 @@ const activePlayerClass = 'game-active-player';
 
 
 // dom elements
-let playerElements      = document.querySelector(".config-player");
+const playerElements      = document.querySelector(".config-player");
 
-let configSetupDiv          = document.getElementById('config-setup');
-let configPlayersDropdown   = document.getElementById('config-player-count');
-let configSizeDropdown      = document.getElementById('config-size');
-let configThemeDropdown     = document.getElementById('config-theme');
-let configStartButton       = document.getElementById('config-start');
+const configSetupDiv          = document.getElementById('config-setup');
+const configPlayersDropdown   = document.getElementById('config-player-count');
+const configSizeDropdown      = document.getElementById('config-size');
+const configMatchSizeDropdown = document.getElementById('config-match-size');
+const configThemeDropdown     = document.getElementById('config-theme');
+const configStartButton       = document.getElementById('config-start');
 
-let gameScoreDiv        = document.getElementById('game-score');
-let gameBoardTable      = document.getElementById('game-board');
-let gameBoardTbody      = document.getElementById('game-board-tbody');
-let gamePlayerTbody     = document.getElementById('game-player-tbody');
-let gameRestartButton   = document.getElementById('game-restart');
+const gameScoreDiv        = document.getElementById('game-score');
+const gameBoardTable      = document.getElementById('game-board');
+const gameBoardTbody      = document.getElementById('game-board-tbody');
+const gamePlayerTbody     = document.getElementById('game-player-tbody');
+const gameRestartButton   = document.getElementById('game-restart');
 // end dom elements
 
 
@@ -96,8 +102,8 @@ class Manager {
 
     didClickCell(cell, x, y) {
         console.log(`didClickCell: ${x}, ${y}; ${this.state}, ${this.game.state}`);
-        if (this.state !== ManagerStateInProgress || (this.game.state !== GameStateMovePart1 && this.game.state.GameStateMovePart2)) {
-            console.log(`ignoring cell click, manager or game not in proper state`);
+        if (this.state !== ManagerStateInProgress) {
+            console.log(`ignoring cell click, manager not in proper state`);
             return;
         }
         this.game.flipCard(x, y);
@@ -108,13 +114,14 @@ class Manager {
         if (this.state !== ManagerStateConfig) {
             throw new Error(`unable to start: in state ${this.state}`);
         }
-        let playerCount = parseInt(configPlayersDropdown.value, 10);
+        const playerCount = parseInt(configPlayersDropdown.value, 10);
         if (playerCount < 1 || playerCount > 6) {
             throw new Error(`expected 1 <= player count <= 6, got ${playerCount}`);
         }
          // TODO get rid of this side communication channel?
         this.players = PlayerEmojis.slice(0, playerCount);
-        let size = BoardSizeDimensions(configSizeDropdown.value);
+        this.matchSize = parseInt(configMatchSizeDropdown.value, 10);
+        const size = BoardSizeDimensions(configSizeDropdown.value, this.matchSize);
         this.width = size[0];
         this.height = size[1];
         this.cardCharacters = GetCharacters(configThemeDropdown.value);
@@ -131,23 +138,25 @@ class Manager {
         this.setState(ManagerStateConfig);
     }
 
-    startNewGame(width, height) {
+    startNewGame() {
         if (this.state !== ManagerStateConfig) {
             throw new Error(`unable to start game from state ${this.state}`);
         }
         this.game = new Game(
-            width,
-            height,
+            this.width,
+            this.height,
             this.players,
             this.isRandom,
             this.cardCharacters,
             (gameState) => this.didChangeGameState(gameState),
-            DefaultMatchSize);
-        this.setUpTable(width, height);
+            this.matchSize);
+        this.setUpTable();
         this.refreshScoreArea(this.game.getPlayerScores());
     }
 
-    setUpTable(xCount, yCount) {
+    setUpTable() {
+        const xCount = this.width;
+        const yCount = this.height;
         // 1. clear out old table children
         // 2. create new table children
         // 3. add listeners
@@ -234,9 +243,7 @@ class Manager {
         this.refreshScoreArea(this.game.getPlayerScores());
         this.refreshTurnCount(this.game.turns.length);
         switch (event.state) {
-            case GameStateMovePart1:
-                break;
-            case GameStateMovePart2:
+            case GameStateMove:
                 break;
             case GameStateFaceUp:
                 break;
@@ -259,7 +266,7 @@ class Manager {
                 this.refreshTurnCount(0);
                 break;
             case ManagerStateInProgress:
-                this.startNewGame(this.width, this.height);
+                this.startNewGame();
                 setShow(configSetupDiv, false);
                 setShow(gameBoardTable, true);
                 setShow(gameScoreDiv, true);
@@ -352,7 +359,7 @@ class Game {
     constructor(width, height, players, isRandom, cardCharacters, didChangeState, matchSize) {
         console.log(`new game: ${width}, ${height}; ${players}; ${isRandom}; ${didChangeState}`);
         this.didChangeState = didChangeState;
-        this.playerPairs = players.map(_ => []);
+        this.playerSets = players.map(_ => []);
         this.players = players;
 
         if (!width || width < 1 || !height || height < 1) {
@@ -360,8 +367,9 @@ class Game {
         }
         this.width = width;
         this.height = height;
+        this.matchSize = matchSize;
 
-        this.state = GameStateMovePart1;
+        this.state = GameStateMove;
         this.nextPlayer = 0;
 
         const size = width * height;
@@ -393,12 +401,15 @@ class Game {
         }
 
         // TODO how to handle these ?  perf optimization ?
-        this.faceUp = null;
-        this.remainingPairs = setsCount;
+        this.faceUp = [];
+        this.remainingSetsCount = setsCount;
         this.turns = [];
     }
 
     flipCard(x, y) {
+        if (this.state !== GameStateMove) {
+            throw new Error(`can not flip card at ${x}, ${y} -- in state ${this.state}`)
+        }
         console.log("player %s move to %d, %d", this.nextPlayer, x, y);
         if (!(x >= 0 && x < this.width)) {
             throw new Error("invalid x coordinate: " + x);
@@ -411,24 +422,26 @@ class Game {
             throw new Error(`already face up or captured: ${x}, ${y}`);
         }
 
-        if (this.state === GameStateMovePart1) {
-            cell.flipFaceUp();
-            this.faceUp = [cell];
-            this.setState({state: GameStateMovePart2, updateCells: [cell]});
-        } else if (this.state === GameStateMovePart2) {
+        if (this.state === GameStateMove) {
             cell.flipFaceUp();
             this.faceUp.push(cell);
-            this.setState({state: GameStateFaceUp, updateCells: [cell]});
-            console.log(`setting timeout to capture pair or flip cards back to face down`);
-            const self = this;
-            setTimeout(function() {
-                console.log(`running capture/flip timeout`);
-                self.finishTurn();
-            }, FaceUpWaitMilliseconds);
-            // ignore clicks until state has changed back to move part1
+            if (this.faceUp.length < this.matchSize) {
+                this.didChangeState({state: this.state, updateCells: [cell]});
+            } else {
+                this.state = GameStateFaceUp;
+                this.didChangeState({state: this.state, updateCells: [cell]});
+                console.log(`setting timeout to capture set or flip cards back to face down`);
+                const self = this;
+                setTimeout(function() {
+                    console.log(`running capture/flip timeout`);
+                    self.finishTurn();
+                }, FaceUpWaitMilliseconds);
+                // ignore clicks until state has changed back to move part1
+            }
         } else {
             throw new Error(`cannot move: game not in right state (state: ${this.state})`);
         }
+        console.log(`flip card, state is ${this.state}\n${this.toPrettyStringUser()}\n${this.toPrettyStringCard()}`);
     }
 
     finishTurn() {
@@ -437,24 +450,28 @@ class Game {
         }
 
         let faceUp = this.faceUp;
-        let fst = faceUp[0];
-        let snd = faceUp[1];
+        let isComplete = true;
+        for (let i = 1; i < this.faceUp.length; i++) {
+            if (this.faceUp[i].char !== this.faceUp[0].char) {
+                isComplete = false;
+                break;
+            }
+        }
 
-        this.turns.push({player: this.nextPlayer, cells: this.faceUp, foundPair: fst.char === snd.char});
-        let foundPair = null;
+        this.turns.push({player: this.nextPlayer, cells: this.faceUp, foundSet: isComplete});
 
-        // found a matching pair: add it to the player's pile
-        if (fst.char === snd.char) {
-            foundPair = {player: this.nextPlayer};
-            fst.capture(PlayerColors[this.nextPlayer]);
-            snd.capture(PlayerColors[this.nextPlayer]);
-            this.playerPairs[this.nextPlayer].push(faceUp);
-            this.remainingPairs--;
+        // found a matching set: add it to the player's pile
+        if (isComplete) {
+            this.faceUp.forEach((card) => card.capture(PlayerColors[this.nextPlayer]));
+            this.playerSets[this.nextPlayer].push(faceUp);
+            this.remainingSetsCount--;
             // no more cards left: game is over
-            if (this.remainingPairs === 0) {
+            if (this.remainingSetsCount === 0) {
                 let cells = this.board.flatMap(row => row);
                 cells.forEach(c => c.gameOver());
-                this.setState({state: GameStateOver, updateCells: cells, foundPair: foundPair, updatePlayerTurn: null});
+                this.state = GameStateOver;
+                this.didChangeState({state: this.state, updateCells: cells});
+                console.log(`game: set state to ${this.state}\n${this.toPrettyStringUser()}\n${this.toPrettyStringCard()}`);
                 return;
             }
         } else {
@@ -463,31 +480,25 @@ class Game {
             if (this.nextPlayer >= this.players.length) {
                 this.nextPlayer = 0;
             }
-
-            fst.flipFaceDown();
-            snd.flipFaceDown();
+            this.faceUp.forEach((card) => card.flipFaceDown());
         }
 
-        this.faceUp = null;
+        this.faceUp = [];
 
-        this.setState({state: GameStateMovePart1, updateCells: faceUp, foundPair: foundPair, updatePlayerTurn: this.nextPlayer});
+        console.log(`game: set state to ${this.state}\n${this.toPrettyStringUser()}\n${this.toPrettyStringCard()}`);
+        this.state = GameStateMove;
+        this.didChangeState({state: this.state, updateCells: faceUp});
         console.log(`continuing game, player ${this.nextPlayer}'s turn`);
     }
 
-    setState(event) {
-        console.log(`game: set state to ${JSON.stringify(event)}\n${this.toPrettyStringUser()}\n${this.toPrettyStringCard()}`);
-        this.state = event.state;
-        this.didChangeState(event);
-    }
-
     getPlayerScores() {
-        let maxScore = Math.max(...this.players.map((p, ix) => this.playerPairs[ix].length ));
+        let maxScore = Math.max(...this.players.map((p, ix) => this.playerSets[ix].length ));
         return this.players.map((p, ix) => {
             return {
                 'symbol'        : p,
                 'backgroundColor': PlayerColors[ix],
-                'hasBorder'     : (this.state !== GameStateOver) ? ix === this.nextPlayer : (this.playerPairs[ix].length === maxScore),
-                'score'         : this.playerPairs[ix].length,
+                'hasBorder'     : (this.state !== GameStateOver) ? ix === this.nextPlayer : (this.playerSets[ix].length === maxScore),
+                'score'         : this.playerSets[ix].length,
             };
         });
     }
@@ -555,7 +566,7 @@ class Game {
     debugDump() {
         console.log(JSON.stringify({
             next: this.nextPlayer,
-            pairs: this.playerPairs,
+            sets: this.playerSets,
             faceUp: this.faceUp,
             state: this.state,
         }));
@@ -578,7 +589,7 @@ function runTests() {
     board.flipCard(1, 0);
     board.debugDump();
 
-    board.setState(GameStateMovePart1);
+    board.setState(GameStateMove);
 
     board.flipCard(0, 1);
     board.debugDump();
