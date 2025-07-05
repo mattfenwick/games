@@ -34,6 +34,7 @@ const PlayerColors = shuffle([
 const PlayerEmojis = shuffle(Object.values(PeopleEmojis));
 
 const FaceUpWaitMilliseconds = 1000;
+const DefaultMatchSize = 2;
 
 const BoardSizeTiny     = 'tiny';
 const BoardSizeSmall    = 'small';
@@ -134,7 +135,14 @@ class Manager {
         if (this.state !== ManagerStateConfig) {
             throw new Error(`unable to start game from state ${this.state}`);
         }
-        this.game = new Game(width, height, this.players, this.isRandom, this.cardCharacters, (gameState) => this.didChangeGameState(gameState));
+        this.game = new Game(
+            width,
+            height,
+            this.players,
+            this.isRandom,
+            this.cardCharacters,
+            (gameState) => this.didChangeGameState(gameState),
+            DefaultMatchSize);
         this.setUpTable(width, height);
         this.refreshScoreArea(this.game.getPlayerScores());
     }
@@ -341,7 +349,7 @@ class GameCell {
 }
 
 class Game {
-    constructor(width, height, players, isRandom, cardCharacters, didChangeState) {
+    constructor(width, height, players, isRandom, cardCharacters, didChangeState, matchSize) {
         console.log(`new game: ${width}, ${height}; ${players}; ${isRandom}; ${didChangeState}`);
         this.didChangeState = didChangeState;
         this.playerPairs = players.map(_ => []);
@@ -355,7 +363,6 @@ class Game {
 
         this.state = GameStateMovePart1;
         this.nextPlayer = 0;
-        const matchSize = 2;
 
         const size = width * height;
         if (size % matchSize > 0) {
