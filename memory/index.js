@@ -58,7 +58,7 @@ const ManagerStateOver          = 'managerstate: over';
 
 const GameStateMovePart1    = 'gamestate: move part 1';
 const GameStateMovePart2    = 'gamestate: move part 2';
-const GameStateMovePart3    = 'gamestate: move part 3';
+const GameStateFaceUp    = 'gamestate: face up';
 const GameStateOver         = 'gamestate: over';
 
 const boardCellClass    = 'game-board-cell';
@@ -232,7 +232,7 @@ class Manager {
                 break;
             case GameStateMovePart2:
                 break;
-            case GameStateMovePart3:
+            case GameStateFaceUp:
                 console.log(`setting timeout`);
                 setTimeout(function() {
                     console.log(`running timeout`);
@@ -416,14 +416,14 @@ class Game {
         } else if (this.state === GameStateMovePart2) {
             cell.flipFaceUp();
             this.faceUp.push(cell);
-            this.setState({state: GameStateMovePart3, updateCells: [cell]});
+            this.setState({state: GameStateFaceUp, updateCells: [cell]});
         } else {
             throw new Error(`cannot move: game not in right state (state: ${this.state})`);
         }
     }
 
     finishTurn() {
-        if (this.state !== GameStateMovePart3) {
+        if (this.state !== GameStateFaceUp) {
             throw new Error(`invalid state to finish turn: ${this.state}`);
         }
 
