@@ -466,7 +466,7 @@ class Game {
     }
 
     setState(event) {
-        console.log(`game: set state to ${event}\n${this.toPrettyString()}`);
+        console.log(`game: set state to ${event}\n${this.toPrettyStringUser()}\n${this.toPrettyStringCard()}`);
         this.state = event.state;
         this.didChangeState(event);
     }
@@ -498,13 +498,45 @@ class Game {
         return Array.from(counts.values).filter(c => c != 2).length === 0;
     }
 
+    toPrettyStringCard() {
+        let rows = [];
+        for (let y = 0; y < this.height; y++) {
+            let row = [];
+            for (let x = 0; x < this.width; x++) {
+                const item = this.board[x][y];
+                const s = item.domTextContent;
+                row.push(`[${item.char.value}, ${item.char.color}]`);
+            }
+            rows.push(row.join(" "));
+        }
+        return rows.join("\n");
+    }
+
+    toPrettyStringUser() {
+        let rows = [];
+        for (let y = 0; y < this.height; y++) {
+            let row = [];
+            for (let x = 0; x < this.width; x++) {
+                const item = this.board[x][y];
+                const s = item.domTextContent;
+                // console.log doesn't seem to print monospace with these fancy emojis,
+                // so in lieu of figuring out how to do that cross-browser, just throw
+                // in two spaces because that's sort of close
+                row.push(s ? s : '  ');
+            }
+            rows.push(row.join(" "));
+        }
+        return rows.join("\n");
+    }
+
     toPrettyString() {
         let rows = [];
         for (let y = 0; y < this.height; y++) {
             let row = [];
             for (let x = 0; x < this.width; x++) {
-                let s = this.board[x][y].domTextContent;
-                row.push(`[${s ? s : ' '}, ${this.board[x][y].char}]`);
+                const item = this.board[x][y];
+                const s = item.domTextContent;
+                row.push(`[${s ? s : ' '}, ${item.char.value}, ${item.char.color}]`);
             }
             rows.push(row.join(" "));
         }
