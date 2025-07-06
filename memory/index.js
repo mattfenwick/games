@@ -41,17 +41,38 @@ const BoardSizeLarge    = 'large';
 const BoardSizeXL       = 'xl';
 
 function BoardSizeDimensions(boardSize, matchSize) {
-    if (matchSize < 2 || matchSize > 4) {
+    if (matchSize < 2 || matchSize > 6) {
         throw new Error(`invalid match size ${matchSize}`);
     }
     switch (boardSize) {
-        case BoardSizeSmall: return [4, 3];
-        case BoardSizeMedium: return [9, 4];
-        case BoardSizeLarge: return [12, 6];
+        case BoardSizeSmall:
+            switch (matchSize) {
+                case 5:
+                    return [5, 3];
+                default:
+                    return [4, 3];
+            }
+        case BoardSizeMedium:
+            switch (matchSize) {
+                case 5:
+                    return [7, 5];
+                default:
+                    return [9, 4];
+            }
+        case BoardSizeLarge:
+            switch (matchSize) {
+                case 5:
+                    return [14, 5];
+                default:
+                    return [12, 6];
+            }
         case BoardSizeXL:
             switch (matchSize) {
                 case 3:
+                case 6:
                     return [12, 9];
+                case 5:
+                    return [15, 7];
                 default:
                     return [14, 8];
             }
