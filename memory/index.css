@@ -52,3 +52,16 @@
 .game-active-player td {
     border: 5px black solid;
 }
+
+#config-setup * {
+    font-size: 40px;
+}
+
+#config-controls td {
+    border: 1px dashed black;
+    padding: 25px;
+}
+
+#config-submit {
+    text-align: center;
+}

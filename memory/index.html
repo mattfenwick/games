@@ -11,36 +11,64 @@
 <div class="wrapper-horizontal">
     <div id="config" class="wrapper-vertical">
         <div id="config-setup" class="wrapper-vertical">
-            <select id="config-player-count">
-                <option value="1" selected>Players: one</option>
-                <option value="2">Players: two</option>
-                <option value="3">Players: three</option>
-                <option value="4">Players: four</option>
-                <option value="5">Players: five</option>
-                <option value="6">Players: six</option>
-            </select>
-            <select id="config-size">
-                <option value="small">Size: small</option>
-                <option value="medium" selected>Size: medium</option>
-                <option value="large">Size: large</option>
-                <option value="xl">Size: extra large</option>
-            </select>
-            <select id="config-match-size">
-                <option value="2" selected>Difficulty: normal</option>
-                <option value="3">Difficulty: hard</option>
-                <option value="4">Difficulty: very hard</option>
-                <option value="5">Difficulty: very very hard</option>
-                <option value="6">Difficulty: very very very hard</option>
-            </select>
-            <select id="config-theme">
-                <option value="food">Theme: food</option>
-                <option value="animals">Theme: animals</option>
-                <option value="food and animals" selected>Theme: food and animals</option>
-                <option value="flags">Theme: flags</option>
-                <option value="mixed">Theme: mixed</option>
-                <option value="playing cards">Theme: playing cards</option>
-            </select>
-            <button id="config-start">Start</button>
+            <table id="config-controls">
+                <tbody>
+                    <tr>
+                        <td>Players</td>
+                        <td>
+                            <select id="config-player-count">
+                                <option value="1" selected>one</option>
+                                <option value="2">two</option>
+                                <option value="3">three</option>
+                                <option value="4">four</option>
+                                <option value="5">five</option>
+                                <option value="6">six</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Size</td>
+                        <td>
+                            <select id="config-size">
+                                <option value="small">small</option>
+                                <option value="medium" selected>medium</option>
+                                <option value="large">large</option>
+                                <option value="xl">extra large</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Difficulty</td>
+                        <td>
+                            <select id="config-match-size">
+                                <option value="2" selected>normal</option>
+                                <option value="3">hard</option>
+                                <option value="4">very hard</option>
+                                <option value="5">very very hard</option>
+                                <option value="6">very very very hard</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Theme</td>
+                        <td>
+                            <select id="config-theme">
+                                <option value="food">food</option>
+                                <option value="animals">animals</option>
+                                <option value="food and animals" selected>food and animals</option>
+                                <option value="flags">flags</option>
+                                <option value="mixed">mixed</option>
+                                <option value="playing cards">playing cards</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td id="config-submit" colspan="2">
+                            <button id="config-start">Start</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
         <div id="game-score" class="wrapper-vertical">
